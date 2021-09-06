@@ -19,11 +19,6 @@ namespace Isu.Tools
         {
         }
 
-        protected IsuException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-
         public static IsuException GroupLimitReached()
         {
             return new IsuException("Group students limit reached");
