@@ -72,7 +72,7 @@ namespace Isu.Core.Services
             if (newGroup.Students.Count >= _configuration.StudentsByGroupLimit)
                 throw IsuException.GroupLimitReached();
 
-            Group? oldGroup = student.Group;
+            Group oldGroup = student.Group.ThrowIfNull(new IsuException("Student has no group"));
             oldGroup.RemoveStudent(student);
             newGroup.AddStudent(student);
             student.ChangeGroup(newGroup);
