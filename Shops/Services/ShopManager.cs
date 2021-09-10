@@ -41,12 +41,8 @@ namespace Shops.Services
             List<ProductOrder> validOrders = orders.ThrowIfNull(new ArgumentNullException(nameof(orders)))
                                                    .ThrowIfContainsNull(new ShopsException("Order can't be null"));
 
-            var shops = _shops.Where(s => s.HasEnoughProducts(validOrders)).ToList();
-
-            if (shops.Count == 0)
-                return null;
-
-            return shops.MinBy(s => s.CalculateCost(validOrders));
+            return _shops.Where(s => s.HasEnoughProducts(validOrders))
+                                    .MinBy(s => s.CalculateCost(validOrders));
         }
     }
 }
