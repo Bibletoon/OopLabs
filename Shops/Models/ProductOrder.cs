@@ -7,9 +7,11 @@ namespace Shops.Models
     {
         public ProductOrder(Product? product, int count)
         {
+            ArgumentNullException.ThrowIfNull(product, nameof(product));
+
             if (count <= 0)
                 throw new ShopsException($"Invalid order count - {count}");
-            Product = product.ThrowIfNull(new ArgumentNullException(nameof(product)));
+            Product = product;
             Count = count;
         }
 

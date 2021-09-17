@@ -25,7 +25,7 @@ namespace Shops.Services
 
         public Product RegisterProduct(string? name)
         {
-            name = name.ThrowIfNull(new ArgumentNullException(nameof(name)));
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
             if (name == string.Empty)
                 throw new ShopsException("Name can't be empty");
 
@@ -41,13 +41,14 @@ namespace Shops.Services
 
         public Shop? FindShopWithBestOffer(ProductOrder? order)
         {
-            order = order.ThrowIfNull(new ArgumentNullException(nameof(order)));
+            ArgumentNullException.ThrowIfNull(order, nameof(order));
             return FindShopWithBestOffer(new List<ProductOrder?>() { order });
         }
 
         public Shop? FindShopWithBestOffer(List<ProductOrder?>? orders)
         {
-            List<ProductOrder> validOrders = orders.ThrowIfNull(new ArgumentNullException(nameof(orders)))
+            ArgumentNullException.ThrowIfNull(orders);
+            List<ProductOrder> validOrders = orders
                                                    .ThrowIfContainsNull(new ShopsException("Order can't be null"));
 
             return _shops.Where(s => s.HasEnoughProducts(validOrders))

@@ -11,7 +11,7 @@ namespace Shops.Models
 
         public Shop(string? name)
         {
-            name = name.ThrowIfNull(new ArgumentNullException(nameof(name)));
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
 
             if (name == string.Empty)
                 throw new ShopsException("Name can't be empty");
@@ -24,8 +24,8 @@ namespace Shops.Models
 
         public void AddLots(List<Lot?>? lots)
         {
-            List<Lot> notNullLots = lots.ThrowIfNull(new ArgumentNullException(nameof(lots)))
-                                               .ThrowIfContainsNull(new ShopsException("Lot can't be null"));
+            ArgumentNullException.ThrowIfNull(lots, nameof(lots));
+            List<Lot> notNullLots = lots.ThrowIfContainsNull(new ShopsException("Lot can't be null"));
 
             if (!notNullLots.All(CanAddLot))
             {
@@ -41,7 +41,7 @@ namespace Shops.Models
 
         public void AddLot(Lot lot)
         {
-            lot = lot.ThrowIfNull(new ArgumentNullException(nameof(lot)));
+            ArgumentNullException.ThrowIfNull(lot, nameof(lot));
 
             if (!CanAddLot(lot))
             {
@@ -65,7 +65,7 @@ namespace Shops.Models
 
         public Lot GetProductInfo(Product? product)
         {
-            product = product.ThrowIfNull(new ArgumentNullException(nameof(product)));
+            ArgumentNullException.ThrowIfNull(product, nameof(product));
             if (_availableProducts.ContainsKey(product.Id)
                 && _availableProducts[product.Id].Count > 0)
                 return _availableProducts[product.Id];
@@ -75,7 +75,7 @@ namespace Shops.Models
 
         public void SetProductPrice(Product? product, int price)
         {
-            product = product.ThrowIfNull(new ArgumentNullException(nameof(product)));
+            ArgumentNullException.ThrowIfNull(product, nameof(product));
 
             if (price <= 0)
                 throw new ShopsException("Price can't be less than or equal zero");
@@ -88,37 +88,37 @@ namespace Shops.Models
 
         public void Buy(User? customer, ProductOrder? order)
         {
-            order = order.ThrowIfNull(new ArgumentNullException(nameof(order)));
+            ArgumentNullException.ThrowIfNull(order, nameof(order));
             Buy(customer, new List<ProductOrder?>()
             {
                 order,
             });
         }
 
-        public void Buy(User? customer, List<ProductOrder?>? nullableOrders)
+        public void Buy(User? customer, List<ProductOrder?>? orders)
         {
-            customer = customer.ThrowIfNull(new ArgumentNullException(nameof(customer)));
-            List<ProductOrder> orders = nullableOrders
-                                        .ThrowIfNull(new ArgumentNullException(nameof(orders)))
-                                        .ThrowIfContainsNull(new ShopsException("Order can't be null"));
+            ArgumentNullException.ThrowIfNull(customer, nameof(customer));
+            ArgumentNullException.ThrowIfNull(orders, nameof(orders));
+            List<ProductOrder> notNullOrders = orders
+                .ThrowIfContainsNull(new ShopsException("Order can't be null"));
 
-            bool ordersAreUnique = orders.Select(order => order.Product.Id).Distinct().Count() == orders.Count;
+            bool ordersAreUnique = notNullOrders.Select(order => order.Product.Id).Distinct().Count() == orders.Count;
 
             if (!ordersAreUnique)
                 throw new ShopsException("Order can't have similar products");
 
-            bool canProvideEnoughProducts = orders.All(HasEnoughProducts);
+            bool canProvideEnoughProducts = notNullOrders.All(HasEnoughProducts);
 
             if (!canProvideEnoughProducts)
                 throw new ShopsException($"Not enough products in shop {Name}");
 
-            int totalCost = orders.Sum(CalculateOrderCost);
+            int totalCost = notNullOrders.Sum(CalculateOrderCost);
 
             if (customer.Money < totalCost)
                 throw new ShopsException($"User {customer.Name} has not enough money");
 
             customer.PayMoney(totalCost);
-            SellProducts(orders);
+            SellProducts(notNullOrders);
         }
 
         internal bool HasEnoughProducts(List<ProductOrder> order) =>

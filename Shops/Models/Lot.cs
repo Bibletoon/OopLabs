@@ -7,13 +7,15 @@ namespace Shops.Models
     {
         public Lot(Product? product, int count, int price)
         {
+            ArgumentNullException.ThrowIfNull(product, nameof(product));
+
             if (count <= 0)
                 throw new ShopsException($"Invalid lot count - {count}");
 
             if (price <= 0)
                 throw new ShopsException($"Invalid lot price - {price}");
 
-            Product = product.ThrowIfNull(new ArgumentNullException(nameof(product)));
+            Product = product;
             Count = count;
             Price = price;
         }

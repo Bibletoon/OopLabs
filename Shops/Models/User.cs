@@ -7,7 +7,7 @@ namespace Shops.Models
     {
         public User(string? name, int money)
         {
-            name = name.ThrowIfNull(new ArgumentNullException(nameof(name)));
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
             if (name == string.Empty)
                 throw new ShopsException("Name can't be empty");
             Name = name;
