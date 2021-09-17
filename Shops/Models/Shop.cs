@@ -48,16 +48,16 @@ namespace Shops.Models
                 throw new ShopsException($"Can't add product {lot.Product.Name}. Too big count provided.");
             }
 
-            if (!_availableProducts.ContainsKey(lot.Product.Id))
+            if (!_availableProducts.TryGetValue(lot.Product.Id, out Lot existingLot))
             {
                 _availableProducts[lot.Product.Id] = new Lot(lot.Product, lot.Count, lot.Price);
                 return;
             }
 
-            if (_availableProducts[lot.Product.Id].Count == 0)
-                _availableProducts[lot.Product.Id].SetPrice(lot.Price);
+            if (existingLot.Count == 0)
+                existingLot.SetPrice(lot.Price);
 
-            _availableProducts[lot.Product.Id].IncreaseCount(lot.Count);
+            existingLot.IncreaseCount(lot.Count);
         }
 
         public IReadOnlyList<Lot> GetAllProductsInfo()
@@ -66,8 +66,8 @@ namespace Shops.Models
         public Lot GetProductInfo(Product product)
         {
             ArgumentNullException.ThrowIfNull(product, nameof(product));
-            if (_availableProducts.ContainsKey(product.Id)
-                && _availableProducts[product.Id].Count > 0)
+            if (_availableProducts.TryGetValue(product.Id, out Lot existingLot)
+                && existingLot.Count > 0)
                 return _availableProducts[product.Id];
 
             throw new ShopsException("Product isn't presented at shop");
@@ -80,10 +80,10 @@ namespace Shops.Models
             if (price <= 0)
                 throw new ShopsException("Price can't be less than or equal zero");
 
-            if (!_availableProducts.ContainsKey(product.Id) || _availableProducts[product.Id].Count <= 0)
+            if (!_availableProducts.TryGetValue(product.Id, out Lot existingLot) || existingLot.Count <= 0)
                 throw ShopsException.ProductIsNotPresentedAtShop(product, this);
 
-            _availableProducts[product.Id].SetPrice(price);
+            existingLot.SetPrice(price);
         }
 
         public void Buy(User customer, ProductOrder order)
@@ -128,8 +128,8 @@ namespace Shops.Models
             orders.Sum(CalculateOrderCost);
 
         private bool HasEnoughProducts(ProductOrder order) =>
-                _availableProducts.ContainsKey(order.Product.Id)
-                && _availableProducts[order.Product.Id].Count >= order.Count;
+                _availableProducts.TryGetValue(order.Product.Id, out Lot existingLot)
+                && existingLot.Count >= order.Count;
 
         private int CalculateOrderCost(ProductOrder order) =>
                 order.Count * _availableProducts[order.Product.Id].Price;
@@ -144,10 +144,10 @@ namespace Shops.Models
 
         private bool CanAddLot(Lot lot)
         {
-            if (!_availableProducts.ContainsKey(lot.Product.Id))
+            if (!_availableProducts.TryGetValue(lot.Product.Id, out Lot existingLot))
                 return true;
 
-            return _availableProducts[lot.Product.Id].CanIncreaseCount(lot.Count);
+            return existingLot.CanIncreaseCount(lot.Count);
         }
     }
 }

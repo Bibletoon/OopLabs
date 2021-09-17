@@ -10,16 +10,8 @@ namespace Shops.UI.ViewModels
 
         protected ViewModel()
         {
-            NavigateToPageCommand = new BaseParametrizedCommand<Type>(pageType =>
-                                                                      {
-                                                                          _viewManager.OpenPage(pageType);
-                                                                          return CommandResult.Success();
-                                                                      });
-            QuitCommand = new BaseCommand(() =>
-                                          {
-                                              _viewManager.Quit();
-                                              return CommandResult.Success();
-                                          });
+            NavigateToPageCommand = new BaseParametrizedCommand<Type>(NavigateToPage);
+            QuitCommand = new BaseCommand(Quit);
         }
 
         public IParameterizedCommand<Type> NavigateToPageCommand { get; }
@@ -34,5 +26,17 @@ namespace Shops.UI.ViewModels
         }
 
         protected abstract void Init(Toplevel top);
+
+        private CommandResult NavigateToPage(Type pageType)
+        {
+            _viewManager.OpenPage(pageType);
+            return CommandResult.Success();
+        }
+
+        private CommandResult Quit()
+        {
+            _viewManager.Quit();
+            return CommandResult.Success();
+        }
     }
 }
