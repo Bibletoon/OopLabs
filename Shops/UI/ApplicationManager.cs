@@ -78,7 +78,7 @@ namespace Shops.UI
             var product18 = shopManager.RegisterProduct("Product 18");
             var product19 = shopManager.RegisterProduct("Product 19");
 
-            shop1.AddLots(new List<Lot?>()
+            shop1.AddLots(new List<Lot>()
             {
                 product1.ToLot(10, 100),
                 product2.ToLot(5, 20),
@@ -101,7 +101,7 @@ namespace Shops.UI
                 product19.ToLot(7, 50),
             });
 
-            shop2.AddLots(new List<Lot?>()
+            shop2.AddLots(new List<Lot>()
             {
                 product1.ToLot(1, 30),
                 product3.ToLot(500, 20),

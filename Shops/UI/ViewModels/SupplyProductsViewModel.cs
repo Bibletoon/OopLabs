@@ -34,7 +34,7 @@ namespace Shops.UI.ViewModels
 
         public override void Dispose()
         {
-            _view.Dispose();
+            _view?.Dispose();
         }
 
         protected override void Init(Toplevel top)
@@ -46,7 +46,7 @@ namespace Shops.UI.ViewModels
         {
             try
             {
-                args.Shop.AddLots(args.Lots.Cast<Lot?>().ToList());
+                args.Shop.AddLots(args.Lots);
                 return CommandResult.Success();
             }
             catch (Exception e)

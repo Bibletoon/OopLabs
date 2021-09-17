@@ -8,7 +8,7 @@ namespace Shops.UI.Views
     public abstract class View<T> : IDisposable
         where T : ViewModel
     {
-        private StatusBar? _statusBar;
+        private StatusBar _statusBar;
 
         protected View(T viewModel)
         {
@@ -53,7 +53,7 @@ namespace Shops.UI.Views
 
         protected void AddStatusbarText(string text)
         {
-            _statusBar?.AddItemAt(_statusBar.Items.Length, new StatusItem(Key.Null, text, () => { }));
+            _statusBar.AddItemAt(_statusBar.Items.Length, new StatusItem(Key.Null, text, () => { }));
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Shops.Models
     {
         private readonly Dictionary<int, Lot> _availableProducts;
 
-        public Shop(string? name)
+        public Shop(string name)
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
 
@@ -22,7 +22,7 @@ namespace Shops.Models
 
         public string Name { get; init; }
 
-        public void AddLots(List<Lot?>? lots)
+        public void AddLots(List<Lot> lots)
         {
             ArgumentNullException.ThrowIfNull(lots, nameof(lots));
             List<Lot> notNullLots = lots.ThrowIfContainsNull(new ShopsException("Lot can't be null"));
@@ -63,7 +63,7 @@ namespace Shops.Models
         public IReadOnlyList<Lot> GetAllProductsInfo()
             => _availableProducts.Values.Where(p => p.Count > 0).ToList();
 
-        public Lot GetProductInfo(Product? product)
+        public Lot GetProductInfo(Product product)
         {
             ArgumentNullException.ThrowIfNull(product, nameof(product));
             if (_availableProducts.ContainsKey(product.Id)
@@ -73,7 +73,7 @@ namespace Shops.Models
             throw new ShopsException("Product isn't presented at shop");
         }
 
-        public void SetProductPrice(Product? product, int price)
+        public void SetProductPrice(Product product, int price)
         {
             ArgumentNullException.ThrowIfNull(product, nameof(product));
 
@@ -86,16 +86,16 @@ namespace Shops.Models
             _availableProducts[product.Id].SetPrice(price);
         }
 
-        public void Buy(User? customer, ProductOrder? order)
+        public void Buy(User customer, ProductOrder order)
         {
             ArgumentNullException.ThrowIfNull(order, nameof(order));
-            Buy(customer, new List<ProductOrder?>()
+            Buy(customer, new List<ProductOrder>()
             {
                 order,
             });
         }
 
-        public void Buy(User? customer, List<ProductOrder?>? orders)
+        public void Buy(User customer, List<ProductOrder> orders)
         {
             ArgumentNullException.ThrowIfNull(customer, nameof(customer));
             ArgumentNullException.ThrowIfNull(orders, nameof(orders));

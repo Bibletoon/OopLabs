@@ -12,8 +12,8 @@ namespace Shops.UI.Views
 {
     public class AddPersonView : View<AddPersonViewModel>
     {
-        private TextField? _personNameField;
-        private TextField? _personMoney;
+        private TextField _personNameField;
+        private TextField _personMoney;
 
         public AddPersonView(AddPersonViewModel viewModel)
             : base(viewModel)
@@ -85,7 +85,7 @@ namespace Shops.UI.Views
             _personNameField = _personNameField.ThrowIfNull(new ApplicationException("Application is not initialised"));
             var name = _personNameField.Text.ToString();
 
-            bool validMoney = int.TryParse(_personMoney?.Text.ToString(), out int money);
+            bool validMoney = int.TryParse(_personMoney.Text.ToString(), out int money);
 
             if (!validMoney)
             {

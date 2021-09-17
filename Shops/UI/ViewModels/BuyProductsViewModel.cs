@@ -38,7 +38,7 @@ namespace Shops.UI.ViewModels
 
         public override void Dispose()
         {
-            _view.Dispose();
+            _view?.Dispose();
         }
 
         protected override void Init(Toplevel top)
@@ -50,7 +50,7 @@ namespace Shops.UI.ViewModels
         {
             try
             {
-                args.Shop.Buy(args.User, args.Orders.Cast<ProductOrder?>().ToList());
+                args.Shop.Buy(args.User, args.Orders);
                 return CommandResult.Success();
             }
             catch (Exception e)

@@ -5,7 +5,7 @@ namespace Shops.Models
 {
     public class ProductOrder
     {
-        public ProductOrder(Product? product, int count)
+        public ProductOrder(Product product, int count)
         {
             ArgumentNullException.ThrowIfNull(product, nameof(product));
 

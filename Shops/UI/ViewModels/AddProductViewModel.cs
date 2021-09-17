@@ -15,16 +15,16 @@ namespace Shops.UI.ViewModels
         {
             _shopManager = shopManager;
 
-            AddProductCommand = new BaseParametrizedCommand<string?>(AddProduct);
+            AddProductCommand = new BaseParametrizedCommand<string>(AddProduct);
 
             _view = new AddProductView(this);
         }
 
-        public IParameterizedCommand<string?> AddProductCommand { get; }
+        public IParameterizedCommand<string> AddProductCommand { get; }
 
         public override void Dispose()
         {
-            _view.Dispose();
+            _view?.Dispose();
         }
 
         protected override void Init(Toplevel top)
@@ -32,7 +32,7 @@ namespace Shops.UI.ViewModels
             _view.Init(top);
         }
 
-        private CommandResult AddProduct(string? name)
+        private CommandResult AddProduct(string name)
         {
             try
             {

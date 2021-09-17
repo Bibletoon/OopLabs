@@ -6,18 +6,18 @@ namespace Shops.UI.ViewModels
 {
     public abstract class ViewModel : IDisposable
     {
-        private NavigationViewManager? _viewManager;
+        private NavigationViewManager _viewManager;
 
         protected ViewModel()
         {
             NavigateToPageCommand = new BaseParametrizedCommand<Type>(pageType =>
                                                                       {
-                                                                          _viewManager?.OpenPage(pageType);
+                                                                          _viewManager.OpenPage(pageType);
                                                                           return CommandResult.Success();
                                                                       });
             QuitCommand = new BaseCommand(() =>
                                           {
-                                              _viewManager?.Quit();
+                                              _viewManager.Quit();
                                               return CommandResult.Success();
                                           });
         }

@@ -19,7 +19,7 @@ namespace Shops.Tools
         {
         }
 
-        public static ShopsException ProductIsNotPresentedAtShop(Product? product, Shop? shop) =>
-            new ShopsException($"Product {product?.Name} is not presented at shop {shop?.Name}");
+        public static ShopsException ProductIsNotPresentedAtShop(Product product, Shop shop) =>
+            new ShopsException($"Product {product.Name} is not presented at shop {shop.Name}");
     }
 }

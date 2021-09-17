@@ -5,7 +5,7 @@ namespace Shops.UI.Views
 {
     public class AddShopView : View<AddShopViewModel>
     {
-        private TextField? _shopNameField;
+        private TextField _shopNameField;
 
         public AddShopView(AddShopViewModel viewModel)
             : base(viewModel)
@@ -57,7 +57,7 @@ namespace Shops.UI.Views
 
         private void CreateShop()
         {
-            var name = _shopNameField?.Text.ToString();
+            var name = _shopNameField.Text.ToString();
 
             var result = ViewModel.AddShopCommand.Execute(name);
 

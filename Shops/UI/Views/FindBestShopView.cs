@@ -13,7 +13,7 @@ namespace Shops.UI.Views
     {
         private readonly List<ProductOrder> _orders = new List<ProductOrder>();
         private List<Product> _products = new List<Product>();
-        private TableView? _ordersTable;
+        private TableView _ordersTable;
         private bool _dialogResult;
 
         public FindBestShopView(FindBestShopViewModel viewModel)
@@ -252,7 +252,7 @@ namespace Shops.UI.Views
             return new Button[] { addButton, cancelButton };
         }
 
-        private bool ValidateOrderParameter(string? fieldData, out int result)
+        private bool ValidateOrderParameter(string fieldData, out int result)
         {
             bool parseParameter = int.TryParse(fieldData, out result);
 

@@ -32,7 +32,7 @@ namespace Shops.UI.ViewModels
 
         public override void Dispose()
         {
-            _view.Dispose();
+            _view?.Dispose();
         }
 
         protected override void Init(Toplevel top)

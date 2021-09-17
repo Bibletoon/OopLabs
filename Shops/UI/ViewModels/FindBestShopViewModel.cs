@@ -23,22 +23,18 @@ namespace Shops.UI.ViewModels
 
             GetAllProductsQuery = new BaseQuery<List<Product>>(() => _shopManager.GetAllProducts().ToList());
 
-            // Note: Cast здесь (и в паре других мест) добавлен,
-            // так как нельзя передать List<Class> как параметр в метод, принимающий List<Class?>,
-            // а создать перегрузку, принимающую List<Class> тоже нельзя
-            // (при передаче ругается, что типы разные, а при перегрузке ругается, что типы одинаковые )
-            FindBestShopQuery = new BaseParametrizedQuery<Shop?, List<ProductOrder>>(args =>
-                                        _shopManager.FindShopWithBestOffer(args.Cast<ProductOrder?>().ToList()));
+            FindBestShopQuery = new BaseParametrizedQuery<Shop, List<ProductOrder>>(args =>
+                                        _shopManager.FindShopWithBestOffer(args));
 
             _view = new FindBestShopView(this);
         }
 
         public IQuery<List<Product>> GetAllProductsQuery { get; }
-        public IParameterizedQuery<Shop?, List<ProductOrder>> FindBestShopQuery { get; }
+        public IParameterizedQuery<Shop, List<ProductOrder>> FindBestShopQuery { get; }
 
         public override void Dispose()
         {
-            _view.Dispose();
+            _view?.Dispose();
         }
 
         protected override void Init(Toplevel top)

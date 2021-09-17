@@ -23,7 +23,7 @@ namespace Shops.Services
             _shops.Add(shop);
         }
 
-        public Product RegisterProduct(string? name)
+        public Product RegisterProduct(string name)
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
             if (name == string.Empty)
@@ -39,13 +39,13 @@ namespace Shops.Services
 
         public IReadOnlyList<Product> GetAllProducts() => _products.AsReadOnly();
 
-        public Shop? FindShopWithBestOffer(ProductOrder? order)
+        public Shop FindShopWithBestOffer(ProductOrder order)
         {
             ArgumentNullException.ThrowIfNull(order, nameof(order));
-            return FindShopWithBestOffer(new List<ProductOrder?>() { order });
+            return FindShopWithBestOffer(new List<ProductOrder>() { order });
         }
 
-        public Shop? FindShopWithBestOffer(List<ProductOrder?>? orders)
+        public Shop FindShopWithBestOffer(List<ProductOrder> orders)
         {
             ArgumentNullException.ThrowIfNull(orders);
             List<ProductOrder> validOrders = orders

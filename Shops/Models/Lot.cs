@@ -5,7 +5,7 @@ namespace Shops.Models
 {
     public class Lot
     {
-        public Lot(Product? product, int count, int price)
+        public Lot(Product product, int count, int price)
         {
             ArgumentNullException.ThrowIfNull(product, nameof(product));
 

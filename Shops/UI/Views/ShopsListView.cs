@@ -160,7 +160,7 @@ namespace Shops.UI.Views
                 return;
             }
 
-            bool isInt = int.TryParse(priceField.Text?.ToString(), out int newPrice);
+            bool isInt = int.TryParse(priceField.Text.ToString(), out int newPrice);
 
             if (!isInt || newPrice <= 0)
             {

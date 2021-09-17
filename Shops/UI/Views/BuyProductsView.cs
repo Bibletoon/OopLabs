@@ -16,9 +16,9 @@ namespace Shops.UI.Views
         private List<Shop> _shops = new List<Shop>();
         private List<User> _users = new List<User>();
         private List<Product> _products = new List<Product>();
-        private TableView? _ordersTable;
-        private Shop? _selectedShop;
-        private User? _selectedUser;
+        private TableView _ordersTable;
+        private Shop _selectedShop;
+        private User _selectedUser;
         private bool _dialogResult;
 
         public BuyProductsView(BuyProductsViewModel viewModel)
@@ -297,7 +297,7 @@ namespace Shops.UI.Views
             return new Button[] { addButton, cancelButton };
         }
 
-        private bool ValidateOrderParameter(string? fieldData, out int result)
+        private bool ValidateOrderParameter(string fieldData, out int result)
         {
             bool parseParameter = int.TryParse(fieldData, out result);
 

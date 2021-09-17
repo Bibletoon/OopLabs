@@ -52,8 +52,8 @@ namespace Shops.UI.Views
 
         public override void Dispose()
         {
-            _scopeList.Dispose();
-            _functionsList.Dispose();
+            _scopeList?.Dispose();
+            _functionsList?.Dispose();
         }
 
         protected override void InitComponents(Toplevel top)

@@ -5,7 +5,7 @@ namespace Shops.Models
 {
     public class User
     {
-        public User(string? name, int money)
+        public User(string name, int money)
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
             if (name == string.Empty)

@@ -10,7 +10,7 @@ namespace Shops.UI
     {
         private readonly ServiceProvider _serviceProvider;
         private readonly Stack<Type> _lastViews;
-        private ViewModel? _currentView;
+        private ViewModel _currentView;
 
         public NavigationViewManager(ServiceProvider serviceProvider)
         {

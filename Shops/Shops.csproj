@@ -6,7 +6,6 @@
         <LangVersion>preview</LangVersion>
         <WarningLevel>5</WarningLevel>
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

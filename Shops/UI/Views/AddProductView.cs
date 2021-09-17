@@ -8,7 +8,7 @@ namespace Shops.UI.Views
 {
     public class AddProductView : View<AddProductViewModel>
     {
-        private TextField? _productNameField;
+        private TextField _productNameField;
 
         public AddProductView(AddProductViewModel viewModel)
             : base(viewModel)
@@ -60,7 +60,7 @@ namespace Shops.UI.Views
 
         private void CreateProduct()
         {
-            var name = _productNameField?.Text.ToString();
+            var name = _productNameField.Text.ToString();
 
             var result = ViewModel.AddProductCommand.Execute(name);
 

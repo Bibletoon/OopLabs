@@ -15,8 +15,8 @@ namespace Shops.UI.Views
         private readonly List<Lot> _lots = new List<Lot>();
         private List<Shop> _shops = new List<Shop>();
         private List<Product> _products = new List<Product>();
-        private TableView? _lotsTable;
-        private Shop? _selectedShop;
+        private TableView _lotsTable;
+        private Shop _selectedShop;
         private bool _dialogResult;
 
         public SupplyProductsView(SupplyProductsViewModel viewModel)
@@ -315,7 +315,7 @@ namespace Shops.UI.Views
             return new Button[] { addButton, cancelButton };
         }
 
-        private bool ValidateLotParameter(string? fieldData, out int result)
+        private bool ValidateLotParameter(string fieldData, out int result)
         {
             bool parseParameter = int.TryParse(fieldData, out result);
 
