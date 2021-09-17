@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using NUnit.Framework;
 using Shops.Models;
 using Shops.Services;
 using Shops.Tools;
+using Shops.UI.Commands;
+using Shops.UI.Commands.CommandArguments;
 
 namespace Shops.Tests
 {
     public class ShopManagerTests
     {
         private ShopManager _shopManager;
-        
+
         [SetUp]
         public void Init()
         {
@@ -21,12 +24,10 @@ namespace Shops.Tests
         #region SupplyTests
         
         [Test]
-        public void AddNewLots_LotsWasAddedWithProperPriceAndCount()
+        [TestCase(10, 20)]
+        public void AddNewLots_LotsWasAddedWithProperPriceAndCount(int productsCount, int productsPrice)
         {
-            const int productsCount = 10;
-            const int productsPrice = 20;
-            
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product1 = _shopManager.RegisterProduct("Product 1");
             Product product2 = _shopManager.RegisterProduct("Product 2");
             Product product3 = _shopManager.RegisterProduct("Product 3");
@@ -71,14 +72,10 @@ namespace Shops.Tests
         }
 
         [Test]
-        public void AddMoreLots_CountIncreasedAndPriceSaved()
+        [TestCase(10,10,20,20)]
+        public void AddMoreLots_CountIncreasedAndPriceSaved(int startCount, int price, int addCount, int addPrice)
         {
-            const int startCount = 10;
-            const int price = 10;
-            const int addCount = 20;
-            const int addPrice = 20;
-            
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
             
             shop.AddLot(product.ToLot(startCount,price));
@@ -91,16 +88,15 @@ namespace Shops.Tests
         }
 
         [Test]
-        public void SellAllProductLots_ProductIsNotAvailable()
+        [TestCase(10, 10)]
+        public void SellAllProductLots_ProductIsNotAvailable(int productsCount, int productPrice)
         {
-            const int productsCount = 10;
-            const int productPrice = 10;
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
-            Person person = new Person("Person", productsCount * productPrice);
+            User user = new User("User", productsCount * productPrice);
             
             shop.AddLot(product.ToLot(productsCount,productPrice));
-            shop.Buy(person, product.ToOrder(productsCount));
+            shop.Buy(user, product.ToOrder(productsCount));
 
             Assert.Catch<ShopsException>(() =>
                                          {
@@ -109,17 +105,15 @@ namespace Shops.Tests
         }
 
         [Test]
-        public void AddLotsAfterSellingAll_LotsAvailableWithNewPrice()
+        [TestCase(3, 20)]
+        public void AddLotsAfterSellingAll_LotsAvailableWithNewPrice(int addProductsCount, int addProductsPrice)
         {
-            const int addProductsCount = 3;
-            const int addProductsPrice = 20;
-            
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("product");
-            Person person = new Person("Person", 100);
+            User user = new User("User", 100);
             shop.AddLot(product.ToLot(1,1));
             
-            shop.Buy(person,new List<ProductOrder>(){product.ToOrder(1)});
+            shop.Buy(user,new List<ProductOrder>(){product.ToOrder(1)});
             
             shop.AddLot(product.ToLot(addProductsCount,addProductsPrice));
 
@@ -129,16 +123,13 @@ namespace Shops.Tests
         }
 
         [Test]
-        public void AddLotsToTwoShops_LotsAreIndependent()
+        [TestCase(10,50,100,20)]
+        public void AddLotsToTwoShops_LotsAreIndependent(int lotsCount, int lotsStartPrice, int firstLotNewPrice, int secondLotNewPrice)
         {
-            const int lotsStartPrice = 50;
-            const int firstLotNewPrice = 100;
-            const int secondLotNewPrice = 20;
-            
-            Shop shop1 = _shopManager.Create("Shop 1");
-            Shop shop2 = _shopManager.Create("Shopp 2");
+            Shop shop1 = new Shop("Shop 1");
+            Shop shop2 = new Shop("Shopp 2");
             Product product = _shopManager.RegisterProduct("product");
-            Lot lot = product.ToLot(10, 50);
+            Lot lot = product.ToLot(lotsCount, lotsStartPrice);
             
             shop1.AddLot(lot);
             shop2.AddLot(lot);
@@ -149,17 +140,35 @@ namespace Shops.Tests
             Assert.AreEqual(firstLotNewPrice, shop1.GetProductInfo(product).Price);
             Assert.AreEqual(secondLotNewPrice, shop2.GetProductInfo(product).Price);
         }
+        
+        [Test]
+        public void SupplyProductsWithTooBigCount_ThrowsException()
+        {
+            Shop shop = new Shop("Shop");
+            Product product = _shopManager.RegisterProduct("Product");
+            
+            shop.AddLot(product.ToLot(1000, 100));
+
+            Assert.Catch<ShopsException>(() =>
+                                         {
+                                             shop.AddLot(product.ToLot(int.MaxValue, 100));
+                                         });
+            
+            Assert.Catch<ShopsException>(() =>
+                                         {
+                                             shop.AddLots(new List<Lot>(){product.ToLot(int.MaxValue, 100)});
+                                         });
+        }
 
         #endregion
 
         #region ShopProductsTests
 
         [Test]
-        public void ChangeProductPrice_ProductAvailableWithNewPrice()
+        [TestCase(100, 20)]
+        public void ChangeProductPrice_ProductAvailableWithNewPrice(int startPrice, int newPrice)
         {
-            const int startPrice = 100;
-            const int newPrice = 20;
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
             
             shop.AddLot(product.ToLot(10,startPrice));
@@ -174,7 +183,7 @@ namespace Shops.Tests
         [Test]
         public void ChangePriceForNotAvailableProduct_ThrowsException()
         {
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
 
             Assert.Catch<ShopsException>(() =>
@@ -186,7 +195,7 @@ namespace Shops.Tests
         [Test]
         public void ChangePriceToInvalid_ThrowsException()
         {
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
             shop.AddLot(product.ToLot(10,10));
             
@@ -197,9 +206,21 @@ namespace Shops.Tests
         }
 
         [Test]
+        [TestCase(10, 100)]
+        public void GetInfoForProduct_ReturnsProperInfo(int productCount, int productPrice)
+        {
+            Shop shop = new Shop("Shop");
+            Product product = _shopManager.RegisterProduct("Product");
+            shop.AddLot(product.ToLot(productCount,productPrice));
+            var productInfo = shop.GetProductInfo(product);
+            Assert.AreEqual(productInfo.Price, productPrice);
+            Assert.AreEqual(productInfo.Count, productCount);
+        }
+
+        [Test]
         public void GetInfoForNotAvailableProduct_ThrowsException()
         {
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
 
             Assert.Catch<ShopsException>(() =>
@@ -208,21 +229,32 @@ namespace Shops.Tests
                                          });
         }
 
+        [Test]
+        public void GetAllProducts_ShouldReturnProperProducts()
+        {
+            Shop shop = new Shop("Shop");
+            Product product = _shopManager.RegisterProduct("Product");
+            Product product2 = _shopManager.RegisterProduct("Product 2");
+            var products = _shopManager.GetAllProducts();
+            Assert.Contains(product, products.ToList());
+            Assert.Contains(product2, products.ToList());
+        }
+
         #endregion
         
         #region PurchasesTests
 
         [Test]
-        public void BuyProduct_MoneyAndProductsCountChangedProperly()
+        [TestCase(100, 30, 5, 3)]
+        public void BuyProduct_MoneyAndProductsCountChangedProperly(
+            int moneyBefore, 
+            int productPrice,
+            int productCount,
+            int productToBuyCount)
         {
-            const int moneyBefore = 100;
-            const int productPrice = 30;
-            const int productCount = 5;
-            const int productToBuyCount = 3;
-
-            var person = new Person("name", moneyBefore);
+            var person = new User("name", moneyBefore);
             var shopManager = new ShopManager();
-            var shop = shopManager.Create("shop name");
+            var shop = new Shop("shop name");
             var product = shopManager.RegisterProduct("product name");
 
             var lot = product.ToLot(productCount, productPrice);
@@ -238,41 +270,39 @@ namespace Shops.Tests
         }
         
         [Test]
-        public void BuyMoreProductsThanAvailable_ThrowsExceptionMoneyDontChange()
+        [TestCase(1000)]
+        public void BuyMoreProductsThanAvailable_ThrowsExceptionMoneyDontChange(int personMoney)
         {
-            const int personMoney = 1000;
-            
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
-            Person person = new Person("Person",personMoney);
+            User user = new User("User",personMoney);
             
             shop.AddLot(product.ToLot(1,1));
 
             Assert.Catch<ShopsException>(() =>
                                           {
-                                              shop.Buy(person, new List<ProductOrder>()
+                                              shop.Buy(user, new List<ProductOrder>()
                                               {
                                                   product.ToOrder(10)
                                               });
                                           });
             
-            Assert.AreEqual(personMoney,person.Money);
+            Assert.AreEqual(personMoney,user.Money);
         }
 
         [Test]
-        public void BuyProductsWithNotEnoughMoney_ThrowsExceptionProductCountDontChange()
+        [TestCase(100)]
+        public void BuyProductsWithNotEnoughMoney_ThrowsExceptionProductCountDontChange(int productsCount)
         {
-            const int productCount = 100;
-            
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
-            Person person = new Person("Person",1);
+            User user = new User("User",1);
             
-            shop.AddLot(product.ToLot(productCount,100));
+            shop.AddLot(product.ToLot(productsCount,100));
 
             Assert.Catch<ShopsException>(() =>
                                           {
-                                              shop.Buy(person, new List<ProductOrder>()
+                                              shop.Buy(user, new List<ProductOrder>()
                                               {
                                                   product.ToOrder(10)
                                               });
@@ -280,15 +310,15 @@ namespace Shops.Tests
 
             Lot info = shop.GetProductInfo(product);
             
-            Assert.AreEqual(productCount,info.Count);
+            Assert.AreEqual(productsCount,info.Count);
         }
 
         [Test]
         public void CreateOrderWithSameProducts_ThrowsException()
         {
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
-            Person person = new Person("Person", 1000);
+            User user = new User("User", 1000);
             
             shop.AddLot(product.ToLot(100,100));
 
@@ -300,7 +330,7 @@ namespace Shops.Tests
 
             Assert.Catch<ShopsException>(() =>
                                          {
-                                             shop.Buy(person, orders);
+                                             shop.Buy(user, orders);
                                          });
         }
 
@@ -323,10 +353,16 @@ namespace Shops.Tests
         [Test]
         public void FindMinimalPriceForOrder_ReturnProperShop()
         {
-            Shop shop1 = _shopManager.Create("Shop 1");
-            Shop shop2 = _shopManager.Create("Shop 2");
-            Shop shop3 = _shopManager.Create("Shop 3");
-            Shop shop4 = _shopManager.Create("Shop 4");
+            Shop shop1 = new Shop("Shop 1");
+            Shop shop2 = new Shop("Shop 2");
+            Shop shop3 = new Shop("Shop 3");
+            Shop shop4 = new Shop("Shop 4");
+
+            _shopManager.RegisterShop(shop1);
+            _shopManager.RegisterShop(shop2);
+            _shopManager.RegisterShop(shop3);
+            _shopManager.RegisterShop(shop4);
+            
             Product product = _shopManager.RegisterProduct("Product");
 
             shop1.AddLot(product.ToLot(10,10));
@@ -342,11 +378,16 @@ namespace Shops.Tests
         [Test]
         public void FindMinimalPriceForNotAvailableOrder_ReturnNull()
         {
-            Shop shop1 = _shopManager.Create("Shop 1");
-            Shop shop2 = _shopManager.Create("Shop 2");
-            Shop shop3 = _shopManager.Create("Shop 3");
-            Shop shop4 = _shopManager.Create("Shop 4");
+            Shop shop1 = new Shop("Shop 1");
+            Shop shop2 = new Shop("Shop 2");
+            Shop shop3 = new Shop("Shop 3");
+            Shop shop4 = new Shop("Shop 4");
             Product product = _shopManager.RegisterProduct("Product");
+            
+            _shopManager.RegisterShop(shop1);
+            _shopManager.RegisterShop(shop2);
+            _shopManager.RegisterShop(shop3);
+            _shopManager.RegisterShop(shop4);
 
             Shop? bestShop = _shopManager.FindShopWithBestOffer(product.ToOrder(5));
             Assert.IsNull(bestShop);
@@ -355,11 +396,16 @@ namespace Shops.Tests
         [Test]
         public void FindMinimalPriceForNotEnoughOrder_ReturnNull()
         {
-            Shop shop1 = _shopManager.Create("Shop 1");
-            Shop shop2 = _shopManager.Create("Shop 2");
-            Shop shop3 = _shopManager.Create("Shop 3");
-            Shop shop4 = _shopManager.Create("Shop 4");
+            Shop shop1 = new Shop("Shop 1");
+            Shop shop2 = new Shop("Shop 2");
+            Shop shop3 = new Shop("Shop 3");
+            Shop shop4 = new Shop("Shop 4");
             Product product = _shopManager.RegisterProduct("Product");
+            
+            _shopManager.RegisterShop(shop1);
+            _shopManager.RegisterShop(shop2);
+            _shopManager.RegisterShop(shop3);
+            _shopManager.RegisterShop(shop4);
 
             shop1.AddLot(product.ToLot(10,10));
             shop2.AddLot(product.ToLot(7,100));
@@ -370,7 +416,7 @@ namespace Shops.Tests
             
             Assert.IsNull(bestShop);
         }
-        
+
         #endregion
         
         #region NullabilityTests
@@ -387,14 +433,23 @@ namespace Shops.Tests
                                                 {
                                                     new ProductOrder(null, 100);
                                                 });
+
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    new Shop(null);
+                                                });
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    new User(null, 100);
+                                                });
         }
 
         [Test]
         public void ProvideNullArgumentsToShopMethods_ThrowsException()
         {
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
-            Person person = new Person("Person",100);
+            User user = new User("User",100);
             shop.AddLot(product.ToLot(10,10));
             
             Assert.Catch<ArgumentNullException>(() =>
@@ -423,9 +478,9 @@ namespace Shops.Tests
         [Test]
         public void BuyNullOrders_ThrowsException()
         {
-            Shop shop = _shopManager.Create("Shop");
+            Shop shop = new Shop("Shop");
             Product product = _shopManager.RegisterProduct("Product");
-            Person person = new Person("Person", 1000);
+            User user = new User("User", 1000);
             
             shop.AddLot(product.ToLot(100,100));
 
@@ -438,7 +493,7 @@ namespace Shops.Tests
 
             Assert.Catch<ShopsException>(() =>
                                          {
-                                             shop.Buy(person, orders);
+                                             shop.Buy(user, orders);
                                          });
         }
         
@@ -446,7 +501,7 @@ namespace Shops.Tests
         public void AddNullLots_ThrowsException()
         {
             var shopManager = new ShopManager();
-            Shop shop = shopManager.Create("shop name");
+            Shop shop = new Shop("shop name");
             Product product = shopManager.RegisterProduct("product name");
 
             Assert.Catch<ShopsException>(() =>

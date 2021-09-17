@@ -9,8 +9,13 @@ namespace Shops.Models
     {
         private readonly Dictionary<int, Lot> _availableProducts;
 
-        internal Shop(string name)
+        public Shop(string? name)
         {
+            name = name.ThrowIfNull(new ArgumentNullException(nameof(name)));
+
+            if (name == string.Empty)
+                throw new ShopsException("Name can't be empty");
+
             Name = name;
             _availableProducts = new Dictionary<int, Lot>();
         }
@@ -22,6 +27,12 @@ namespace Shops.Models
             List<Lot> notNullLots = lots.ThrowIfNull(new ArgumentNullException(nameof(lots)))
                                                .ThrowIfContainsNull(new ShopsException("Lot can't be null"));
 
+            if (!notNullLots.All(CanAddLot))
+            {
+                var errorLot = notNullLots.First(l => !CanAddLot(l));
+                throw new ShopsException($"Can't add product {errorLot.Product.Name}. Too big count provided.");
+            }
+
             foreach (Lot lot in notNullLots)
             {
                 AddLot(lot);
@@ -31,6 +42,11 @@ namespace Shops.Models
         public void AddLot(Lot lot)
         {
             lot = lot.ThrowIfNull(new ArgumentNullException(nameof(lot)));
+
+            if (!CanAddLot(lot))
+            {
+                throw new ShopsException($"Can't add product {lot.Product.Name}. Too big count provided.");
+            }
 
             if (!_availableProducts.ContainsKey(lot.Product.Id))
             {
@@ -43,6 +59,9 @@ namespace Shops.Models
 
             _availableProducts[lot.Product.Id].IncreaseCount(lot.Count);
         }
+
+        public IReadOnlyList<Lot> GetAllProductsInfo()
+            => _availableProducts.Values.Where(p => p.Count > 0).ToList();
 
         public Lot GetProductInfo(Product? product)
         {
@@ -67,7 +86,7 @@ namespace Shops.Models
             _availableProducts[product.Id].SetPrice(price);
         }
 
-        public void Buy(Person? customer, ProductOrder? order)
+        public void Buy(User? customer, ProductOrder? order)
         {
             order = order.ThrowIfNull(new ArgumentNullException(nameof(order)));
             Buy(customer, new List<ProductOrder?>()
@@ -76,7 +95,7 @@ namespace Shops.Models
             });
         }
 
-        public void Buy(Person? customer, List<ProductOrder?>? nullableOrders)
+        public void Buy(User? customer, List<ProductOrder?>? nullableOrders)
         {
             customer = customer.ThrowIfNull(new ArgumentNullException(nameof(customer)));
             List<ProductOrder> orders = nullableOrders
@@ -93,10 +112,10 @@ namespace Shops.Models
             if (!canProvideEnoughProducts)
                 throw new ShopsException($"Not enough products in shop {Name}");
 
-            long totalCost = orders.Sum(CalculateOrderCost);
+            int totalCost = orders.Sum(CalculateOrderCost);
 
             if (customer.Money < totalCost)
-                throw new ShopsException($"Person {customer.Name} has not enough money");
+                throw new ShopsException($"User {customer.Name} has not enough money");
 
             customer.PayMoney(totalCost);
             SellProducts(orders);
@@ -121,6 +140,14 @@ namespace Shops.Models
             {
                 _availableProducts[order.Product.Id].DecreaseCount(order.Count);
             }
+        }
+
+        private bool CanAddLot(Lot lot)
+        {
+            if (!_availableProducts.ContainsKey(lot.Product.Id))
+                return true;
+
+            return _availableProducts[lot.Product.Id].CanIncreaseCount(lot.Count);
         }
     }
 }

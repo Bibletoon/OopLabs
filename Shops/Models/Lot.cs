@@ -22,6 +22,13 @@ namespace Shops.Models
         public int Count { get; private set; }
         public int Price { get; private set; }
 
+        internal bool CanIncreaseCount(int count)
+        {
+            long sum = (long)Count + count;
+            int intSum = unchecked(Count + count);
+            return sum == intSum;
+        }
+
         internal void IncreaseCount(int count)
         {
             Count += count;

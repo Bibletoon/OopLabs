@@ -8,27 +8,36 @@ namespace Shops.Services
 {
     public class ShopManager
     {
+        private readonly List<Shop> _shops;
+        private readonly List<Product> _products;
         private int _nextProductId = 1;
-        private List<Shop> _shops;
 
         public ShopManager()
         {
             _shops = new List<Shop>();
+            _products = new List<Product>();
         }
 
-        public Shop Create(string name)
+        public void RegisterShop(Shop shop)
         {
-            var newShop = new Shop(name);
-            _shops.Add(newShop);
-            return newShop;
+            _shops.Add(shop);
         }
 
-        public Product RegisterProduct(string name)
+        public Product RegisterProduct(string? name)
         {
+            name = name.ThrowIfNull(new ArgumentNullException(nameof(name)));
+            if (name == string.Empty)
+                throw new ShopsException("Name can't be empty");
+
             var product = new Product(_nextProductId, name);
             _nextProductId++;
+            _products.Add(product);
             return product;
         }
+
+        public IReadOnlyList<Shop> GetAllShops() => _shops.AsReadOnly();
+
+        public IReadOnlyList<Product> GetAllProducts() => _products.AsReadOnly();
 
         public Shop? FindShopWithBestOffer(ProductOrder? order)
         {
