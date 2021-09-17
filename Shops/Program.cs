@@ -1,9 +1,12 @@
-﻿namespace Shops
+﻿using Shops.UI;
+
+namespace Shops
 {
-    internal class Program
+    public static class Program
     {
         private static void Main()
         {
+            new ApplicationManager().Run();
         }
     }
 }
