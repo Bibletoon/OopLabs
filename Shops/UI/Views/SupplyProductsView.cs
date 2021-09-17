@@ -270,11 +270,11 @@ namespace Shops.UI.Views
             };
             dialog.Add(
                        productLabel,
-                       productPriceEdit,
                        productTextField,
                        productCountLabel,
                        productCountEdit,
-                       productPriceLabel);
+                       productPriceLabel,
+                       productPriceEdit);
 
             Application.Run(dialog);
 
