@@ -13,9 +13,11 @@ namespace Isu.Domain.Models
             _students = new List<Student>();
         }
 
-        public CourseNumber CourseNumber => _name.CourseNumber;
+        public Faculty Faculty => _name.StudyCourse.Faculty;
+        public StudyCourse StudyCourse => _name.StudyCourse;
+        public CourseNumber CourseNumber => _name.StudyCourse.CourseNumber;
         public int GroupNumber => _name.GroupNumber;
-        public string Name => $"M3{CourseNumber}{GroupNumber:D2}";
+        public string Name => $"{Faculty.GroupPrefix}3{(int)CourseNumber}{GroupNumber:D2}";
         public IReadOnlyList<Student> Students => _students.AsReadOnly();
 
         internal void AddStudent(Student student)

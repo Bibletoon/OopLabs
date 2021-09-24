@@ -24,11 +24,28 @@ namespace Isu.Tests
         }
 
         [Test]
-        public void ProvideNullArguments_TrowArgumentNullException()
+        public void ProvideNullArgumentsToIsuProvider_TrowArgumentNullException()
         {
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
+            Group group = _isuService.AddGroup(groupName);
+            var student = _isuService.AddStudent(group, "Name");
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    _isuService.AddFaculty(null);
+                                                });
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    _isuService.AddStudyCourse(CourseNumber.Second,null);
+                                                });
             Assert.Catch<ArgumentNullException>(() =>
                                                 {
                                                     _isuService.AddGroup(null);
+                                                });
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    _isuService.AddStudent(group, null);
                                                 });
             Assert.Catch<ArgumentNullException>(() =>
                                                 {
@@ -36,15 +53,63 @@ namespace Isu.Tests
                                                 });
             Assert.Catch<ArgumentNullException>(() =>
                                                 {
-                                                    _isuService.ChangeStudentGroup(null,null);
+                                                    _isuService.ChangeStudentGroup(null,group);
                                                 });
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    _isuService.ChangeStudentGroup(student, null);
+                                                });
+        }
+
+        [Test]
+        public void ProvideNullArgumentsToCtors_ThorwArgumentNullException()
+        {
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    new GroupName(null, 10);
+                                                });
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    new FacultyName(null, "M");
+                                                });
+            Assert.Catch<ArgumentNullException>(() =>
+                                                {
+                                                    new FacultyName("TINT", null);
+                                                });
+        }
+
+        [Test]
+        public void AddFacultyTwice_ThrowException()
+        {
+            var name = new FacultyName("TINT", "M");
+            _isuService.AddFaculty(name);
+
+            Assert.Catch<IsuException>(() =>
+                                       {
+                                           _isuService.AddFaculty(name);
+                                       });
+        }
+
+        [Test]
+        public void AddStudyCourseTwice_ThrowException()
+        {
+            var name = new FacultyName("TINT", "M");
+            var faculty = _isuService.AddFaculty(name);
+            _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+
+            Assert.Catch<IsuException>(() =>
+                                       {
+                                           _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+                                       });
         }
 
         [Test]
         public void CreateGroupTwice_ThrowException()
         {
-            var groupName = GroupName.FromStringName("M3200");
-            Group groupOne = _isuService.AddGroup(groupName);
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
+            Group group = _isuService.AddGroup(groupName);
 
             Assert.Catch<IsuException>(() =>
                                        {
@@ -55,7 +120,9 @@ namespace Isu.Tests
         [Test]
         public void AddStudentToGroup_StudentHasGroupAndGroupContainsStudent()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             
             Student student = _isuService.AddStudent(group, "Bibletoon");
@@ -67,7 +134,9 @@ namespace Isu.Tests
         [Test]
         public void ReachMaxStudentPerGroup_ThrowException()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             _isuService.AddStudent(group, "Student A");
             _isuService.AddStudent(group, "Student B");
@@ -80,17 +149,31 @@ namespace Isu.Tests
         }
 
         [Test]
-        public void CreateGroupInvalidGroupName_ThrowException()
+        public void CreateInvalidGroupName_ThrowException()
         {
-            Assert.Catch<IsuException>(() => GroupName.FromStringName("M3901"));
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            Assert.Catch<IsuException>(() => new GroupName(course, 111));
+        }
+
+        [Test]
+        public void CreateGroup_GroupNameGeneratedProperly()
+        {
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
+            var group = _isuService.AddGroup(groupName);
+            Assert.AreEqual("M3200", group.Name);
         }
 
         [Test]
         public void TransferStudentToAnotherGroup_GroupChanged()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
-            var newGroupName = GroupName.FromStringName("M3201");
+            var newGroupName = new GroupName(course, 1);
             Group newGroup = _isuService.AddGroup(newGroupName);
             Student student = _isuService.AddStudent(group, "Bibletoon");
             
@@ -104,12 +187,14 @@ namespace Isu.Tests
         [Test]
         public void TransferStudentToFullGroup_ThrowExceptionAndDontChangeGroup()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             _isuService.AddStudent(group, "Student A");
             _isuService.AddStudent(group, "Student B");
             _isuService.AddStudent(group, "Student C");
-            var newGroupName = GroupName.FromStringName("M3201");
+            var newGroupName = new GroupName(course, 1);
             Group newGroup = _isuService.AddGroup(newGroupName);
             Student student = _isuService.AddStudent(newGroup,"Student D");
 
@@ -122,7 +207,9 @@ namespace Isu.Tests
         [Test]
         public void GetStudentById_ShouldReturnProperStudent()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student student = _isuService.AddStudent(group, "Bibletoon");
 
@@ -134,7 +221,9 @@ namespace Isu.Tests
         [Test]
         public void GetStudentByInvalidId_ThrowException()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student student = _isuService.AddStudent(group, "Bibletoon");
 
@@ -147,7 +236,9 @@ namespace Isu.Tests
         [Test]
         public void FindStudent_ShouldReturnProperStudent()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student student = _isuService.AddStudent(group, "Bibletoon");
 
@@ -159,7 +250,9 @@ namespace Isu.Tests
         [Test]
         public void FindStudentByInvalidName_ShouldReturnNull()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student student = _isuService.AddStudent(group, "Bibletoon");
 
@@ -169,12 +262,14 @@ namespace Isu.Tests
         [Test]
         public void FindStudentByGroupName_ShouldReturnProper()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student studentOne = _isuService.AddStudent(group, "Bibletoon");
             Student studentTwo = _isuService.AddStudent(group, "Ronimizy");
-            
-            var newGroupName = GroupName.FromStringName("M3201");
+
+            var newGroupName = new GroupName(course, 1);
             Group newGroup = _isuService.AddGroup(newGroupName);
             Student studentThree = _isuService.AddStudent(newGroup, "Valeruka");
 
@@ -188,7 +283,9 @@ namespace Isu.Tests
         [Test]
         public void FindStudentsByInvalidGroupName_ShouldReturnEmptyList()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student studentOne = _isuService.AddStudent(group, "Bibletoon");
             Student studentTwo = _isuService.AddStudent(group, "Ronimizy");
@@ -201,12 +298,15 @@ namespace Isu.Tests
         [Test]
         public void FindStudentsByCourse_ShouldReturnProper()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student studentOne = _isuService.AddStudent(group, "Bibletoon");
             Student studentTwo = _isuService.AddStudent(group, "Ronimizy");
             
-            var newGroupName = GroupName.FromStringName("M3101");
+            var newCourse = _isuService.AddStudyCourse(CourseNumber.First, faculty);
+            var newGroupName = new GroupName(newCourse, 1);
             Group newGroup = _isuService.AddGroup(newGroupName);
             Student studentThree = _isuService.AddStudent(newGroup, "Valeruka");
 
@@ -220,7 +320,9 @@ namespace Isu.Tests
         [Test]
         public void FindStudentsByInvalidCourse_ShouldReturnEmptyList()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             Student studentOne = _isuService.AddStudent(group, "Bibletoon");
             Student studentTwo = _isuService.AddStudent(group, "Ronimizy");
@@ -233,7 +335,9 @@ namespace Isu.Tests
         [Test]
         public void FindGroupByName_ShouldReturnProper()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
 
             Group newGroup = _isuService.FindGroup(group.Name);
@@ -244,7 +348,9 @@ namespace Isu.Tests
         [Test]
         public void FindGroupByInvalidName_ShouldReturnNull()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
 
             Assert.IsNull(_isuService.FindGroup("M3100"));
@@ -253,11 +359,14 @@ namespace Isu.Tests
         [Test]
         public void FindGroupsByCourseNumber_ShouldReturnProper()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
-            var anotherGroupName = GroupName.FromStringName("M3201");
+            var anotherGroupName = new GroupName(course, 1);
             Group anotherGroup = _isuService.AddGroup(anotherGroupName);
-            var thirdGroupName = GroupName.FromStringName("M3101");
+            var newCourse = _isuService.AddStudyCourse(CourseNumber.First, faculty);
+            var thirdGroupName = new GroupName(newCourse, 2);
             Group thirdGroup = _isuService.AddGroup(thirdGroupName);
 
             List<Group> groups = _isuService.FindGroups(CourseNumber.Second);
@@ -270,7 +379,9 @@ namespace Isu.Tests
         [Test]
         public void FindGroupsByInvalidCourse_ShouldReturnEmptyList()
         {
-            var groupName = GroupName.FromStringName("M3200");
+            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var groupName = new GroupName(course, 0);
             Group group = _isuService.AddGroup(groupName);
             
             List<Group> groups = _isuService.FindGroups(CourseNumber.Third);
