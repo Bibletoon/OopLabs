@@ -11,6 +11,8 @@ namespace Isu.Domain.Services
 
         Student AddStudent(Group group, string name);
 
+        Mentor AddMentor(string name);
+
         Student GetStudent(int id);
 
         Student FindStudent(string name);

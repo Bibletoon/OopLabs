@@ -1,16 +1,13 @@
 ﻿namespace Isu.Domain.Models
 {
-    public class Student
+    public class Student : IsuUser
     {
         internal Student(int id, string name, Group group)
+            : base(id, name)
         {
-            Id = id;
-            Name = name;
             Group = group;
         }
 
-        public int Id { get; init; }
-        public string Name { get; init; }
         public Group Group { get; private set; }
 
         internal void ChangeGroup(Group newGroup)

@@ -15,7 +15,7 @@ namespace Isu.Core.Services
         private readonly List<Group> _groups;
         private readonly List<Student> _students;
         private readonly IsuServiceConfiguration _configuration;
-        private int _nextStudentId = 1;
+        private int _nextUserId = 1;
 
         public IsuService(IsuServiceConfiguration configuration)
         {
@@ -67,11 +67,19 @@ namespace Isu.Core.Services
             if (group.Students.Count >= _configuration.StudentsByGroupLimit)
                 throw IsuException.GroupLimitReached();
 
-            var student = new Student(_nextStudentId, name, group);
-            _nextStudentId++;
+            var student = new Student(_nextUserId, name, group);
+            _nextUserId++;
             _students.Add(student);
             group.AddStudent(student);
             return student;
+        }
+
+        public Mentor AddMentor(string name)
+        {
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
+            var mentor = new Mentor(_nextUserId, name);
+            _nextUserId++;
+            return mentor;
         }
 
         public Student GetStudent(int id) =>
