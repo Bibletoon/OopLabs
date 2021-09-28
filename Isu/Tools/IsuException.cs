@@ -23,10 +23,5 @@ namespace Isu.Tools
         {
             return new IsuException("Group students limit reached");
         }
-
-        public static void Throw()
-        {
-            throw new IsuException("Kekw");
-        }
     }
 }
