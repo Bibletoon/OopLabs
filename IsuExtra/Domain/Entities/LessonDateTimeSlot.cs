@@ -10,7 +10,6 @@ namespace IsuExtra.Domain.Entities
             StartTime = startTime;
             EndTime = startTime.AddMinutes(90);
 
-            // TODO: Change to concrete exception
             if (EndTime < StartTime)
                 throw new LessonException("Unsupported lesson time");
             DayOfWeek = dayOfWeek;
