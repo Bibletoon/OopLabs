@@ -74,14 +74,6 @@ namespace Isu.Core.Services
             return student;
         }
 
-        public Mentor AddMentor(string name)
-        {
-            ArgumentNullException.ThrowIfNull(name, nameof(name));
-            var mentor = new Mentor(_nextUserId, name);
-            _nextUserId++;
-            return mentor;
-        }
-
         public Student GetStudent(int id) =>
             _students.Find(s => s.Id == id)
                            ?? throw new IsuException($"No student with such id - {id}");

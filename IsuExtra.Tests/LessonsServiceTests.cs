@@ -17,6 +17,7 @@ namespace IsuExtra.Tests
     {
         private ILessonsService _lessonsService;
         private IIsuService _isuService;
+        private IMentorsService _mentorsService;
         
         [SetUp]
         public void Setup()
@@ -28,6 +29,7 @@ namespace IsuExtra.Tests
             };
             _lessonsService = new LessonsService(configuration);
             _isuService = new IsuService(new IsuServiceConfiguration(){StudentsByGroupLimit = 20});
+            _mentorsService = new MentorsService();
         }
 
         #region NullTests
@@ -36,7 +38,7 @@ namespace IsuExtra.Tests
         public void ProvideNullArgumentsToCtor_ThrowsException()
         {
             var slot = new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday);
-            var mentor = _isuService.AddMentor("Makarevich");
+            var mentor = _mentorsService.AddMentor("Makarevich");
             
             Assert.Catch<ArgumentNullException>(() =>
                                                 {
@@ -60,7 +62,7 @@ namespace IsuExtra.Tests
             var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
             var group = _isuService.AddGroup(new GroupName(course, 0));
             var student = _isuService.AddStudent(group, "name");
-            var mentor = _isuService.AddMentor("Makarevich");
+            var mentor = _mentorsService.AddMentor("Makarevich");
             
             var anotherFaculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
             var ognp = _lessonsService.AddOgnp(anotherFaculty, "Name");
@@ -171,7 +173,7 @@ namespace IsuExtra.Tests
             var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
             var group = _isuService.AddGroup(new GroupName(course, 0));
             var subject = _lessonsService.AddSubject(course, "Subject");
-            var mentor = _isuService.AddMentor("Makarevich");
+            var mentor = _mentorsService.AddMentor("Makarevich");
             var timeSlot = new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday);
             var lessonInfo = new LessonInfo(timeSlot, 100, mentor);
             var lesson = _lessonsService.AddSubjectLesson(subject, lessonInfo, group);
@@ -188,7 +190,7 @@ namespace IsuExtra.Tests
             var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
             var group = _isuService.AddGroup(new GroupName(course, 0));
             var subject = _lessonsService.AddSubject(course, "Subject");
-            var mentor = _isuService.AddMentor("Makarevich");
+            var mentor = _mentorsService.AddMentor("Makarevich");
             var timeSlot = new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday);
             var lessonInfo = new LessonInfo(timeSlot, 100, mentor);
             var timeSlotTwo = new LessonDateTimeSlot(new TimeOnly(10, 10), DayOfWeek.Friday);
@@ -207,7 +209,7 @@ namespace IsuExtra.Tests
             var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
             var group = _isuService.AddGroup(new GroupName(course, 0));
             var subject = _lessonsService.AddSubject(course, "Subject");
-            var mentor = _isuService.AddMentor("Makarevich");
+            var mentor = _mentorsService.AddMentor("Makarevich");
             var timeSlot = new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday);
             var lessonInfo = new LessonInfo(timeSlot, 100, mentor);
             var timeSlotTwo = new LessonDateTimeSlot(new TimeOnly(10, 10), DayOfWeek.Monday);
@@ -325,7 +327,7 @@ namespace IsuExtra.Tests
             var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
-            var mentor = _isuService.AddMentor("Makarevich");
+            var mentor = _mentorsService.AddMentor("Makarevich");
             
             var anotherFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
             var course = _isuService.AddStudyCourse(CourseNumber.Second, anotherFaculty);
