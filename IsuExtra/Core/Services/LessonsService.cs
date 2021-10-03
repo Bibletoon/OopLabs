@@ -105,6 +105,7 @@ namespace IsuExtra.Core.Services
                 throw LessonException.ScheduleIntersection();
 
             stream.AddLesson(ognpLesson);
+            _ognpLessons.Add(ognpLesson);
             return ognpLesson;
         }
 
@@ -115,7 +116,7 @@ namespace IsuExtra.Core.Services
             ArgumentNullException.ThrowIfNull(student, nameof(student));
             ArgumentNullException.ThrowIfNull(stream, nameof(stream));
 
-            if (student.Group.Faculty == stream.Ognp.Faculty)
+            if (student.Group.FacultyPrefix.Equals(stream.Ognp.Faculty.GroupPrefix))
                 throw new OgnpException("Can't register student to ognp of his faculty");
 
             if (GetStudentOgnpStreams(student).Any(s => s.Ognp == stream.Ognp))
@@ -127,7 +128,7 @@ namespace IsuExtra.Core.Services
             if (stream.Students.Count >= _configuration.StudentsByOgnpStreamLimit)
                 throw OgnpException.OgnpLimitReached();
 
-            if (GetStudentLessons(student).Any(l => stream.Lessons.Any(sl => sl.HasIntersection(l))))
+            if (GetStudentLessons(student).Any(l => stream.Lessons.Any(sl => sl.HasTimeIntersection(l))))
                 throw OgnpException.ScheduleIntersectionOnRegistration();
 
             stream.RegisterStudent(student);

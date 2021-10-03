@@ -58,13 +58,13 @@ namespace IsuExtra.Tests
         [Test]
         public void ProvideNullArgumentsToLessonServiceMethods_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var faculty = new Faculty("TINT", "M");
+            var course = new StudyCourse(CourseNumber.Second, faculty);
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "name");
             var mentor = _mentorsService.AddMentor("Makarevich");
             
-            var anotherFaculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var anotherFaculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(anotherFaculty, "Name");
             var stream = _lessonsService.AddOgnpStream(ognp, "Name");
             var subject = _lessonsService.AddSubject(course, "name");
@@ -160,8 +160,8 @@ namespace IsuExtra.Tests
         [Test]
         public void AddSubject_SubjectIsPresent()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
+            var faculty = new Faculty("TINT", "M");
+            var course = new StudyCourse(CourseNumber.Second, faculty);
             var subject = _lessonsService.AddSubject(course, "Subject");
             Assert.Contains(subject, _lessonsService.GetSubjectsByCourse(course).ToList());
         }
@@ -169,9 +169,9 @@ namespace IsuExtra.Tests
         [Test]
         public void AddSubjectLesson_LessonIsPresentInSubjectInGroupInMentor()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var faculty = new Faculty("TINT", "M");
+            var course = new StudyCourse(CourseNumber.Second, faculty);
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var subject = _lessonsService.AddSubject(course, "Subject");
             var mentor = _mentorsService.AddMentor("Makarevich");
             var timeSlot = new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday);
@@ -186,9 +186,9 @@ namespace IsuExtra.Tests
         [Test]
         public void AddTwoSubjectLessonsWithoutIntersection_BothAdded()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var faculty = new Faculty("TINT", "M");
+            var course = new StudyCourse(CourseNumber.Second, faculty);
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var subject = _lessonsService.AddSubject(course, "Subject");
             var mentor = _mentorsService.AddMentor("Makarevich");
             var timeSlot = new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday);
@@ -205,9 +205,9 @@ namespace IsuExtra.Tests
         [Test]
         public void AddTwoSubjectsWithAudienceAndDateTimeIntersection_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var faculty = new Faculty("TINT", "M");
+            var course = new StudyCourse(CourseNumber.Second, faculty);
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var subject = _lessonsService.AddSubject(course, "Subject");
             var mentor = _mentorsService.AddMentor("Makarevich");
             var timeSlot = new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday);
@@ -229,7 +229,7 @@ namespace IsuExtra.Tests
         [Test]
         public void AddNewOgnp_OgnpIsPresent()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var faculty = new Faculty("TINT", "M");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             Assert.Contains(ognp, _lessonsService.GetAllOgnps().ToList());
         }
@@ -237,7 +237,7 @@ namespace IsuExtra.Tests
         [Test]
         public void AddNewOgnpStream_OgnpStreamIsPresent()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
+            var faculty = new Faculty("TINT", "M");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             
@@ -247,13 +247,11 @@ namespace IsuExtra.Tests
         [Test]
         public void RegisterStudentToOgnp_OgnpHasStudent()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             
-            var studentFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, studentFaculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
             
             _lessonsService.RegisterStudentToOgnpStream(student, stream);
@@ -265,11 +263,10 @@ namespace IsuExtra.Tests
         [Test]
         public void RegisterStudentToOgnpOfHisFaculty_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, faculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var group = _isuService.AddGroup(GroupName.FromStringName("P3200"));
             var student = _isuService.AddStudent(group, "Student");
 
             Assert.Catch<OgnpException>(() =>
@@ -281,13 +278,11 @@ namespace IsuExtra.Tests
         [Test]
         public void RegisterStudentToAnotherStreamOfOgnpHeAlreadyRegistered_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             var anotherStream = _lessonsService.AddOgnpStream(ognp, "Jopa");
-            var anotherFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, anotherFaculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
             _lessonsService.RegisterStudentToOgnpStream(student, stream);
 
@@ -300,7 +295,7 @@ namespace IsuExtra.Tests
         [Test]
         public void RegisterStudentToThirdOgnp_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             var anotherOngp = _lessonsService.AddOgnp(faculty, "MSPPO");
@@ -308,9 +303,7 @@ namespace IsuExtra.Tests
             var thirdOgnp = _lessonsService.AddOgnp(faculty, "Linuha");
             var thirdStream = _lessonsService.AddOgnpStream(thirdOgnp, "Name");
             
-            var anotherFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, anotherFaculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
             _lessonsService.RegisterStudentToOgnpStream(student, stream);
             _lessonsService.RegisterStudentToOgnpStream(student, anotherStream);
@@ -324,23 +317,27 @@ namespace IsuExtra.Tests
         [Test]
         public void RegisterStudentToIntersectingOgnp_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             var mentor = _mentorsService.AddMentor("Makarevich");
             
-            var anotherFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, anotherFaculty);
+            var anotherFaculty = new Faculty("TINT", "M");
+            var course = new StudyCourse(CourseNumber.Second, anotherFaculty);
             var subject = _lessonsService.AddSubject(course, "Subject");
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
 
             var timeSlot = new LessonInfo(
                 new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday), 
                 100, mentor);
 
+            var lessonTimeSlot = new LessonInfo(
+                new LessonDateTimeSlot(new TimeOnly(10, 0), DayOfWeek.Monday),
+                101, mentor);
+
             _lessonsService.AddOgnpLesson(stream, timeSlot);
-            _lessonsService.AddSubjectLesson(subject, timeSlot, group);
+            _lessonsService.AddSubjectLesson(subject, lessonTimeSlot, group);
 
             Assert.Catch<OgnpException>(() =>
                                     {
@@ -351,13 +348,11 @@ namespace IsuExtra.Tests
         [Test]
         public void RegisterStudentToFullyPackedOgnp_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
-
-            var anotherFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, anotherFaculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
             var anotherStudent = _isuService.AddStudent(group, "Student");
             _lessonsService.RegisterStudentToOgnpStream(student, stream);
@@ -371,13 +366,11 @@ namespace IsuExtra.Tests
         [Test]
         public void UnregisterStudentFromHisOgnp_StudentNoMoreHasThisOgnp()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             
-            var studentFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, studentFaculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
             
             _lessonsService.RegisterStudentToOgnpStream(student, stream);
@@ -391,13 +384,11 @@ namespace IsuExtra.Tests
         [Test]
         public void UnregisterStudentFromNotHisOgnp_ThrowsException()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             
-            var studentFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, studentFaculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
 
             Assert.Catch<OgnpException>(() =>
@@ -409,15 +400,13 @@ namespace IsuExtra.Tests
         [Test]
         public void GetUnregesteredStudents_ShouldReturnProperResult()
         {
-            var faculty = _isuService.AddFaculty(new FacultyName("PIIKT", "P"));
+            var faculty = new Faculty("PIIKT", "P");
             var ognp = _lessonsService.AddOgnp(faculty, "Kiberbez");
             var stream = _lessonsService.AddOgnpStream(ognp, "Kekw");
             var anotherOngp = _lessonsService.AddOgnp(faculty, "MSPPO");
             var anotherStream = _lessonsService.AddOgnpStream(anotherOngp, "Name");
-
-            var anotherFaculty = _isuService.AddFaculty(new FacultyName("TINT", "M"));
-            var course = _isuService.AddStudyCourse(CourseNumber.Second, anotherFaculty);
-            var group = _isuService.AddGroup(new GroupName(course, 0));
+            
+            var group = _isuService.AddGroup(GroupName.FromStringName("M3200"));
             var student = _isuService.AddStudent(group, "Student");
             var anotherStudent = _isuService.AddStudent(group, "Student");
             var thirdStudent = _isuService.AddStudent(group, "Student");

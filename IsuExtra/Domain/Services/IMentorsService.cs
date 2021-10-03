@@ -1,4 +1,4 @@
-using Isu.Domain.Models;
+using IsuExtra.Domain.Models;
 
 namespace IsuExtra.Domain.Services
 {

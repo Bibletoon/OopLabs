@@ -5,8 +5,6 @@ namespace Isu.Domain.Services
 {
     public interface IIsuService
     {
-        Faculty AddFaculty(FacultyName name);
-        StudyCourse AddStudyCourse(CourseNumber courseNumber, Faculty faculty);
         Group AddGroup(GroupName name);
 
         Student AddStudent(Group group, string name);

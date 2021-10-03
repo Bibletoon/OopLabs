@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using Isu.Domain.Models;
+using IsuExtra.Domain.Entities;
 
 namespace IsuExtra.Domain.Models
 {
@@ -12,6 +11,7 @@ namespace IsuExtra.Domain.Models
         internal Ognp(Faculty faculty, string name)
         {
             Faculty = faculty;
+            Name = name;
             _streams = new List<OgnpStream>();
         }
 

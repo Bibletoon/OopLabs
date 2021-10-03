@@ -1,6 +1,4 @@
 using System;
-using IsuExtra.Domain.Entities;
-using IsuExtra.Domain.Models;
 
 namespace IsuExtra.Tools
 {

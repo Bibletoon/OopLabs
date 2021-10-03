@@ -1,6 +1,6 @@
 using System;
 
-namespace Isu.Domain.Models
+namespace IsuExtra.Domain.Models
 {
     public class Mentor
     {

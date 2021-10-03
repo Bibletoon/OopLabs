@@ -1,5 +1,6 @@
 using System;
 using Isu.Domain.Models;
+using IsuExtra.Domain.Models;
 using IsuExtra.Tools;
 
 namespace IsuExtra.Domain.Entities

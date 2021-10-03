@@ -1,5 +1,4 @@
 using System;
-using Isu.Domain.Models;
 using IsuExtra.Domain.Entities;
 
 namespace IsuExtra.Domain.Models
@@ -21,6 +20,12 @@ namespace IsuExtra.Domain.Models
         {
             ArgumentNullException.ThrowIfNull(lesson, nameof(lesson));
             return AudienceNumber == lesson.AudienceNumber && DateTimeSlot.HasIntersection(lesson.DateTimeSlot);
+        }
+
+        public bool HasTimeIntersection(Lesson lesson)
+        {
+            ArgumentNullException.ThrowIfNull(lesson, nameof(lesson));
+            return DateTimeSlot.HasIntersection(lesson.DateTimeSlot);
         }
     }
 }

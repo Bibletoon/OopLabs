@@ -1,4 +1,3 @@
-using Isu.Domain.Models;
 using IsuExtra.Domain.Entities;
 
 namespace IsuExtra.Domain.Models

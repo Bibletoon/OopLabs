@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Isu.Domain.Models;
+using IsuExtra.Domain.Entities;
 
 namespace IsuExtra.Domain.Models
 {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Isu.Domain.Models
 {
@@ -14,11 +13,10 @@ namespace Isu.Domain.Models
             _students = new List<Student>();
         }
 
-        public Faculty Faculty => _name.StudyCourse.Faculty;
-        public StudyCourse StudyCourse => _name.StudyCourse;
-        public CourseNumber CourseNumber => _name.StudyCourse.CourseNumber;
+        public string FacultyPrefix => _name.FacultyPrefix;
+        public CourseNumber CourseNumber => _name.CourseNumber;
         public int GroupNumber => _name.GroupNumber;
-        public string Name => $"{Faculty.GroupPrefix}3{(int)CourseNumber}{GroupNumber:D2}";
+        public string Name => $"{_name.FacultyPrefix}3{(int)CourseNumber}{GroupNumber:D2}";
         public IReadOnlyList<Student> Students => _students.AsReadOnly();
 
         public static bool operator ==(Group left, Group right) => left?.Equals(right) ?? false;
@@ -30,10 +28,10 @@ namespace Isu.Domain.Models
             if (obj is not Group group)
                 return false;
 
-            return group.StudyCourse.Equals(StudyCourse) && group.Name.Equals(Name);
+            return group.Name.Equals(Name);
         }
 
-        public override int GetHashCode() => HashCode.Combine(StudyCourse, Name);
+        public override int GetHashCode() => Name.GetHashCode();
 
         internal void AddStudent(Student student)
         {

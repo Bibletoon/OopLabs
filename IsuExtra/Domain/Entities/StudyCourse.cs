@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
+using Isu.Domain.Models;
 
-namespace Isu.Domain.Models
+namespace IsuExtra.Domain.Entities
 {
     public class StudyCourse
     {
-        private List<Group> _groups;
-
-        internal StudyCourse(CourseNumber courseNumber, Faculty faculty)
+        public StudyCourse(CourseNumber courseNumber, Faculty faculty)
         {
+            ArgumentNullException.ThrowIfNull(courseNumber, nameof(courseNumber));
+            ArgumentNullException.ThrowIfNull(faculty, nameof(faculty));
             CourseNumber = courseNumber;
             Faculty = faculty;
-            _groups = new List<Group>();
         }
 
         public CourseNumber CourseNumber { get; }

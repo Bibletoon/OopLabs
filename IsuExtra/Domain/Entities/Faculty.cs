@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Isu.Domain.Models
+namespace IsuExtra.Domain.Entities
 {
-    public class FacultyName
+    public class Faculty
     {
-        public FacultyName(string name, string groupPrefix)
+        public Faculty(string name, string groupPrefix)
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
             ArgumentNullException.ThrowIfNull(groupPrefix, nameof(groupPrefix));
@@ -15,16 +15,16 @@ namespace Isu.Domain.Models
         public string Name { get; }
         public string GroupPrefix { get; }
 
-        public static bool operator ==(FacultyName left, FacultyName right) => left?.Equals(right) ?? false;
+        public static bool operator ==(Faculty left, Faculty right) => left?.Equals(right) ?? false;
 
-        public static bool operator !=(FacultyName left, FacultyName right) => !(left == right);
+        public static bool operator !=(Faculty left, Faculty right) => !(left == right);
 
         public override bool Equals(object obj)
         {
-            if (obj is not FacultyName facultyName)
+            if (obj is not Faculty faculty)
                 return false;
 
-            return facultyName.Name.Equals(Name) && facultyName.GroupPrefix.Equals(GroupPrefix);
+            return Name.Equals(faculty.Name) && GroupPrefix.Equals(faculty.GroupPrefix);
         }
 
         public override int GetHashCode() => HashCode.Combine(Name, GroupPrefix);
