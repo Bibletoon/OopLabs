@@ -13,19 +13,22 @@ namespace Isu.Core.Services
         private readonly List<Group> _groups;
         private readonly List<Student> _students;
         private readonly IsuServiceConfiguration _configuration;
-        private int _nextStudentId = 1;
+        private int _nextUserId = 1;
 
         public IsuService(IsuServiceConfiguration configuration)
         {
             _configuration = configuration;
             _groups = new List<Group>();
+            _groups = new List<Group>();
             _students = new List<Student>();
         }
 
-        public Group AddGroup(GroupName? name)
+        public Group AddGroup(GroupName name)
         {
-            name = name.ThrowIfNull(new ArgumentNullException(nameof(name)));
-            if (_groups.Any(g => g.CourseNumber == name.CourseNumber && g.GroupNumber == name.GroupNumber))
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
+            if (_groups.Any(g => g.FacultyPrefix == name.FacultyPrefix
+                                 && g.CourseNumber == name.CourseNumber
+                                 && g.GroupNumber == name.GroupNumber))
                 throw new IsuException("Such group already exists");
 
             var group = new Group(name);
@@ -33,14 +36,15 @@ namespace Isu.Core.Services
             return group;
         }
 
-        public Student AddStudent(Group? group, string name)
+        public Student AddStudent(Group group, string name)
         {
-            group = group.ThrowIfNull(new ArgumentNullException(nameof(group)));
+            ArgumentNullException.ThrowIfNull(group, nameof(group));
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
             if (group.Students.Count >= _configuration.StudentsByGroupLimit)
                 throw IsuException.GroupLimitReached();
 
-            var student = new Student(_nextStudentId, name, group);
-            _nextStudentId++;
+            var student = new Student(_nextUserId, name, group);
+            _nextUserId++;
             _students.Add(student);
             group.AddStudent(student);
             return student;
@@ -50,7 +54,7 @@ namespace Isu.Core.Services
             _students.Find(s => s.Id == id)
                            ?? throw new IsuException($"No student with such id - {id}");
 
-        public Student? FindStudent(string name) =>
+        public Student FindStudent(string name) =>
             _students.Find(s => s.Name == name);
 
         public List<Student> FindStudents(string groupName) =>
@@ -59,20 +63,23 @@ namespace Isu.Core.Services
         public List<Student> FindStudents(CourseNumber courseNumber) =>
             _students.Where(s => s.Group.CourseNumber == courseNumber).ToList();
 
-        public Group? FindGroup(string groupName) =>
+        public Group FindGroup(string groupName) =>
             _groups.Find(g => g.Name == groupName);
 
         public List<Group> FindGroups(CourseNumber courseNumber) =>
             _groups.Where(g => g.CourseNumber == courseNumber).ToList();
 
-        public void ChangeStudentGroup(Student? student, Group? newGroup)
+        public void ChangeStudentGroup(Student student, Group newGroup)
         {
-            student = student.ThrowIfNull(new ArgumentNullException(nameof(student)));
-            newGroup = newGroup.ThrowIfNull(new ArgumentNullException(nameof(newGroup)));
+            ArgumentNullException.ThrowIfNull(student, nameof(student));
+            ArgumentNullException.ThrowIfNull(newGroup, nameof(newGroup));
             if (newGroup.Students.Count >= _configuration.StudentsByGroupLimit)
                 throw IsuException.GroupLimitReached();
 
-            Group oldGroup = student.Group.ThrowIfNull(new IsuException("Student has no group"));
+            if (student.Group is null)
+                throw new IsuException("Student has no group");
+
+            Group oldGroup = student.Group;
             oldGroup.RemoveStudent(student);
             newGroup.AddStudent(student);
             student.ChangeGroup(newGroup);
