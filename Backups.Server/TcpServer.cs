@@ -56,7 +56,7 @@ namespace Backups.Server
             if (info is null)
                 throw new Exception("Wrong type of data provided");
             
-            string localBackupPath = $"{Directory.GetCurrentDirectory()}\\{info.BackupPath}";
+            string localBackupPath = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}{info.BackupPath}";
             if (!Directory.Exists(localBackupPath))
                 Directory.CreateDirectory(localBackupPath);
                 

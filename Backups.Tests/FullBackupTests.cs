@@ -22,7 +22,7 @@ namespace Backups.Tests
         public void SetUp()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            _jobsPath = $"{currentDirectory}\\jobs";
+            _jobsPath = $"{currentDirectory}{Path.DirectorySeparatorChar}jobs";
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>()
             {
                 { "jobsPath", _jobsPath },
@@ -33,7 +33,7 @@ namespace Backups.Tests
                       .SetStorageAlgorithm<SplitStorageAlgorithm>()
                       .SetStorage<LocalStorage>()
                       .Build();
-            _testFolderPath = $"{currentDirectory}\\testFiles";
+            _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}testFiles";
             SetUpTestFiles();
         }
 
@@ -44,23 +44,23 @@ namespace Backups.Tests
                 Directory.CreateDirectory($"{_testFolderPath}");
             }
 
-            File.WriteAllText($"{_testFolderPath}\\a.txt", "Some content of a");
-            File.WriteAllText($"{_testFolderPath}\\b.txt", "Some content of b");
-            File.WriteAllText($"{_testFolderPath}\\c.txt", "Some content of c");
+            File.WriteAllText($"{_testFolderPath}{Path.DirectorySeparatorChar}a.txt", "Some content of a");
+            File.WriteAllText($"{_testFolderPath}{Path.DirectorySeparatorChar}b.txt", "Some content of b");
+            File.WriteAllText($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt", "Some content of c");
         }
 
         [TestCase]
         public void RunTwiceLocallyWithDeletionOfJobObjects_CreatesTwoPointsAndProperAmountOfArchives()
         {
-            _job.AddJobObject(new JobObject($"{_testFolderPath}\\a.txt"));
-            _job.AddJobObject(new JobObject($"{_testFolderPath}\\b.txt"));
-            _job.AddJobObject(new JobObject($"{_testFolderPath}\\c.txt"));
+            _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}a.txt"));
+            _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}b.txt"));
+            _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
-            _job.RemoveJobObject(new JobObject($"{_testFolderPath}\\c.txt"));
+            _job.RemoveJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
 
-            var restorePointsCount = Directory.GetDirectories($"{_jobsPath}\\{_jobName}").Length;
-            var filesCount = Directory.GetFiles($"{_jobsPath}\\{_jobName}", "*", SearchOption.AllDirectories).Length;
+            var restorePointsCount = Directory.GetDirectories($"{_jobsPath}{Path.DirectorySeparatorChar}{_jobName}").Length;
+            var filesCount = Directory.GetFiles($"{_jobsPath}{Path.DirectorySeparatorChar}{_jobName}", "*", SearchOption.AllDirectories).Length;
             Assert.AreEqual(2, restorePointsCount);
             Assert.AreEqual(5, filesCount);
         }
