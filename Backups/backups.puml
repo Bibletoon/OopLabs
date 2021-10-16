@@ -1,0 +1,139 @@
+@startuml
+class InMemoryConfigProvider {
+    + LoadJobs() : List<BackupJob>
+    + SaveJob(job:BackupJob) : void
+}
+
+IConfigProvider <|-- InMemoryConfigProvider
+
+class ZipFileArchiver {
+    + ZipFileArchiver(reader:IFileReader)
+    + ArchiveFiles(filePaths:List<string>, writeStream:Stream) : void
+    + GetArchiveExtension() : string
+}
+IFileArchiver <|-- ZipFileArchiver
+ZipFileArchiver --> IFileReader
+class LocalFileReader {
+    + ReadFile(path:string) : ReadFileInfo
+}
+IFileReader <|-- LocalFileReader
+class SingleStorageAlgorithm {
+    + ProceedFiles(jobObjects:List<JobObject>) : List<JobsGroup>
+}
+IStorageAlgorithm <|-- SingleStorageAlgorithm
+class SplitStorageAlgorithm {
+    + ProceedFiles(jobObjects:List<JobObject>) : List<JobsGroup>
+}
+IStorageAlgorithm <|-- SplitStorageAlgorithm
+class LocalStorage {
+    + CreateBackup(jobName:string, objects:List<JobObject>) : RestorePointInfo
+    + CleanRestorePoints(points:List<RestorePointInfo>, cleaner:IRestorePointsCleaner) : void
+}
+IStorage <|-- LocalStorage
+LocalStorage --> IStorageAlgorithm
+LocalStorage --> IFileArchiver
+interface IConfigProvider {
+    LoadJobs() : List<BackupJob>
+    SaveJob(job:BackupJob) : void
+}
+class JobsGroup {
+    + JobsGroup(jobs:List<JobObject>)
+    + JobsGroup(job:JobObject)
+}
+
+class ReadFileInfo {
+    + ReadFileInfo(name:string, content:Stream)
+    + Name : string
+    + Dispose() : void
+}
+
+interface IFileArchiver {
+    ArchiveFiles(filePaths:List<string>, writeStream:Stream) : void
+    GetArchiveExtension() : string
+}
+interface IFileReader {
+    ReadFile(path:string) : ReadFileInfo
+}
+class BackupJob {
+    - _name : string
+    + AddJobObject(jobObject:JobObject) : void
+    + Run() : void
+}
+
+class JobObject {
+    + JobObject(path:string)
+    + Path : string
+}
+class RestorePointInfo {
+    + RestorePointInfo(creationDate:DateTime, objects:List<JobObject>)
+}
+
+interface IStorageAlgorithm {
+    ProceedFiles(jobObjects:List<JobObject>) : List<JobsGroup>
+}
+interface IStorage {
+    CreateBackup(jobName:string, objects:List<JobObject>) : RestorePointInfo
+    CleanRestorePoints(points:List<RestorePointInfo>, cleaner:IRestorePointsCleaner) : void
+}
+class BackupJobBuilder {
+    - _name : string
+    + BackupJobBuilder(configuration:IConfiguration)
+    + SetConfigProvider() : ISetNameOrLoadJobBuilder
+    LoadJobs() : List<BackupJob>
+    SetName(name:string) : ISetStorageAlgorithmJobBuilder
+    SetStorageAlgorithm() : ISetStorageJobBuilder
+    SetStorage() : IFinalJobBuilder
+    SetPointsLimiter() : ISetCleanerJobBuilder
+    SetFileReader() : IFinalJobBuilder
+    SetRestorePointsCleaner() : IFinalJobBuilder
+    Build() : BackupJob
+}
+ISetNameOrLoadJobBuilder <|-- BackupJobBuilder
+ISetStorageAlgorithmJobBuilder <|-- BackupJobBuilder
+ISetStorageJobBuilder <|-- BackupJobBuilder
+ISetCleanerJobBuilder <|-- BackupJobBuilder
+IFinalJobBuilder <|-- BackupJobBuilder
+
+interface IFinalJobBuilder {
+    SetPointsLimiter() : ISetCleanerJobBuilder
+    SetFileReader() : IFinalJobBuilder
+    Build() : BackupJob
+}
+interface ISetCleanerJobBuilder {
+    SetRestorePointsCleaner() : IFinalJobBuilder
+}
+interface ISetNameOrLoadJobBuilder {
+    LoadJobs() : List<BackupJob>
+    + SetName(name:string) : ISetStorageAlgorithmJobBuilder
+}
+interface ISetStorageAlgorithmJobBuilder {
+    SetStorageAlgorithm() : ISetStorageJobBuilder
+}
+interface ISetStorageJobBuilder {
+    SetStorage() : IFinalJobBuilder
+}
+
+class EmptyRestorePointsCleaner {
+}
+IRestorePointsCleaner <|-- EmptyRestorePointsCleaner
+class EmptyRestorePointsLimiter {
+    + GetPointsToClear(existingPoints:List<RestorePointInfo>, newObjects:List<JobObject>) : List<RestorePointInfo>
+}
+IRestorePointsLimiter <|-- EmptyRestorePointsLimiter
+interface IRestorePointsCleaner {
+}
+interface IRestorePointsLimiter {
+    GetPointsToClear(existingPoints:List<RestorePointInfo>, newObjects:List<JobObject>) : List<RestorePointInfo>
+}
+
+BackupJobBuilder --> BackupJob
+JobObject --o BackupJob
+JobObject --o JobsGroup
+BackupJob --> IStorage
+BackupJob --> IRestorePointsLimiter
+BackupJob --> IRestorePointsCleaner
+IFileReader --> ReadFileInfo
+BackupJob --* RestorePointInfo
+IConfigProvider --> BackupJob
+IConfigProvider --> BackupJobBuilder
+@enduml
