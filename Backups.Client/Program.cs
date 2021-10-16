@@ -18,8 +18,6 @@ var job = new BackupJobBuilder(configuration)
           .SetStorageAlgorithm<SingleStorageAlgorithm>()
           .SetStorage<TcpStorage>()
           .Build();
-job.AddJobObject(new JobObject(@"C:\Users\alex8\Videos\videoplayback.mp4"));
-job.AddJobObject(new JobObject(@"C:\Users\alex8\Downloads\про жопы.jpg"));
-job.AddJobObject(new JobObject(@"C:\Users\alex8\Downloads\pudge.png"));
-job.AddJobObject(new JobObject(@"C:\Users\alex8\Downloads\objection-1192312.mp4"));
+job.AddJobObject(new JobObject(@"some_file"));
+
 job.Run();
