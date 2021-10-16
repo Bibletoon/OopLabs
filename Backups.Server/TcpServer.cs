@@ -27,7 +27,7 @@ namespace Backups.Server
                 CommandInfo info = JsonSerializer.Deserialize<CommandInfo>(infoBytes);
 
                 if (info is null)
-                    throw new Exception("Wrong type of incoming data.");
+                    throw new  FormatException("Wrong format of incoming data.");
                 
                 ProceedCommand(info, stream);
             }
@@ -54,7 +54,7 @@ namespace Backups.Server
             SaveCommand info = JsonSerializer.Deserialize<SaveCommand>(infoBytes);
 
             if (info is null)
-                throw new Exception("Wrong type of data provided");
+                throw new FormatException("Wrong type of data provided");
             
             string localBackupPath = $"{Directory.GetCurrentDirectory()}{Path.DirectorySeparatorChar}{info.BackupPath}";
             if (!Directory.Exists(localBackupPath))
