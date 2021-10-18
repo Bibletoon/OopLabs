@@ -1,12 +1,10 @@
 ﻿using System;
-using Backups.Core.FileArchivers;
-using Backups.Core.FileReaders;
-using Backups.Domain.FileHandlers;
-using Backups.Domain.FileReaders;
-using Backups.Domain.Models;
-using Backups.Domain.StorageAlgorithms;
-using Backups.Domain.Storages;
-using Backups.Tools.Extensions;
+using Backups.FileHandlers;
+using Backups.FileReaders;
+using Backups.Models;
+using Backups.StorageAlgorithms;
+using Backups.Storages;
+using Backups.Tools.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,20 +16,16 @@ namespace Backups.Tools.BackupJobBuilder
           ISetStorageAlgorithmJobBuilder,
           IFinalJobBuilder
     {
-        private readonly ServiceCollection _serviceCollection;
         private string _name;
+        private IFileReader _fileReader;
+        private IStorage _storage;
+        private IStorageAlgorithm _storageAlgorithm;
+        private IFileArchiver _fileArchiver;
 
-        public BackupJobBuilder(IConfiguration configuration)
+        public ISetNameJobBuilder SetFileReader(IFileReader fileReader)
         {
-            _serviceCollection = new ServiceCollection();
-            _serviceCollection.AddTransient(provider => configuration);
-            _serviceCollection.AddTransient<IFileArchiver, ZipFileArchiver>();
-        }
-
-        public ISetNameJobBuilder SetFileReader<T>()
-            where T : class, IFileReader
-        {
-            _serviceCollection.AddTransient<IFileReader, T>();
+            ArgumentNullException.ThrowIfNull(fileReader, nameof(fileReader));
+            _fileReader = fileReader;
             return this;
         }
 
@@ -42,28 +36,39 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
-        ISetStorageJobBuilder ISetStorageAlgorithmJobBuilder.SetStorageAlgorithm<T>()
+        ISetStorageJobBuilder ISetStorageAlgorithmJobBuilder.SetStorageAlgorithm(IStorageAlgorithm algorithm)
         {
-            _serviceCollection.AddScoped<IStorageAlgorithm, T>();
+            ArgumentNullException.ThrowIfNull(algorithm, nameof(algorithm));
+            _storageAlgorithm = algorithm;
             return this;
         }
 
-        IFinalJobBuilder ISetStorageJobBuilder.SetStorage<T>()
+        IFinalJobBuilder ISetStorageJobBuilder.SetStorage(IStorage storage)
         {
-            _serviceCollection.AddSingleton<IStorage, T>();
+            ArgumentNullException.ThrowIfNull(storage, nameof(storage));
+            _storage = storage;
             return this;
         }
 
-        IFinalJobBuilder IFinalJobBuilder.SetFileReader<T>()
+        public IFinalJobBuilder SetFileArchiver(IFileArchiver fileArchiver)
         {
-            _serviceCollection.Remove<IFileReader>();
-            _serviceCollection.AddTransient<IFileReader, T>();
+            ArgumentNullException.ThrowIfNull(fileArchiver, nameof(fileArchiver));
+            _fileArchiver = fileArchiver;
             return this;
         }
 
         BackupJob IFinalJobBuilder.Build()
         {
-            return new BackupJob(_name, _serviceCollection.BuildServiceProvider());
+            _ = _fileReader ?? throw BackupJobException.ServiceIsMissing(nameof(IFileReader));
+            _fileArchiver ??= new ZipFileArchiver();
+            _ = _storageAlgorithm ?? throw BackupJobException.ServiceIsMissing(nameof(IStorageAlgorithm));
+            _ = _storage ?? throw BackupJobException.ServiceIsMissing(nameof(IStorage));
+            return new BackupJob(
+                _name,
+                _fileReader,
+                _fileArchiver,
+                _storageAlgorithm,
+                _storage);
         }
     }
 }

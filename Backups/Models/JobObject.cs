@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Backups.Domain.Models
+namespace Backups.Models
 {
     public class JobObject
     {

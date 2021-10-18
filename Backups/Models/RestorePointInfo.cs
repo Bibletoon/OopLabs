@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Backups.Domain.Models
+namespace Backups.Models
 {
     public class RestorePointInfo
     {
-        private List<JobObject> _objects;
+        private readonly List<JobObject> _objects;
 
         public RestorePointInfo(DateTime creationDate, List<JobObject> objects)
         {

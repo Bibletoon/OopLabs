@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
-using Backups.Core.FileReaders;
-using Backups.Core.StorageAlgorithms;
-using Backups.Core.Storages;
-using Backups.Domain.Models;
+using Backups.FileReaders;
+using Backups.Models;
+using Backups.StorageAlgorithms;
+using Backups.Storages;
 using Backups.Tools.BackupJobBuilder;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
@@ -27,11 +27,11 @@ namespace Backups.Tests
             {
                 { "jobsPath", _jobsPath },
             }).Build();
-            _job = new BackupJobBuilder(configuration)
-                      .SetFileReader<LocalFileReader>()
+            _job = new BackupJobBuilder()
+                      .SetFileReader(new LocalFileReader())
                       .SetName(_jobName)
-                      .SetStorageAlgorithm<SplitStorageAlgorithm>()
-                      .SetStorage<LocalStorage>()
+                      .SetStorageAlgorithm(new SplitStorageAlgorithm())
+                      .SetStorage(new LocalStorage())
                       .Build();
             _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}testFiles";
             SetUpTestFiles();

@@ -1,6 +1,5 @@
 using System.IO;
-using Backups.Core.FileReaders;
-using Backups.Domain.FileReaders;
+using Backups.FileReaders;
 using NUnit.Framework;
 
 namespace Backups.Tests.FileReadersTests

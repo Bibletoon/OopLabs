@@ -1,10 +1,9 @@
-﻿using Backups.Domain.Storages;
+﻿using Backups.Storages;
 
 namespace Backups.Tools.BackupJobBuilder
 {
     public interface ISetStorageJobBuilder
     {
-        IFinalJobBuilder SetStorage<T>()
-            where T : class, IStorage;
+        IFinalJobBuilder SetStorage(IStorage storage);
     }
 }

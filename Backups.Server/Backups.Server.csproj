@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Backups.Server.Common\Backups.Server.Common.csproj" />
+      <ProjectReference Include="..\Backups.Tcp.Common\Backups.Tcp.Common.csproj" />
       <ProjectReference Include="..\Backups\Backups.csproj" />
     </ItemGroup>
 

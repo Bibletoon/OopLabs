@@ -1,20 +1,19 @@
 using System;
 using System.IO;
-using Backups.Domain.Entities;
-using Backups.Domain.FileReaders;
+using Backups.Entities;
 
-namespace Backups.Core.FileReaders
+namespace Backups.FileReaders
 {
     public class LocalFileReader : IFileReader
     {
-        public ReadFileInfo ReadFile(string path)
+        public Package ReadFile(string path)
         {
             ArgumentNullException.ThrowIfNull(path);
 
             if (!File.Exists(path))
                 throw new FileNotFoundException($"File not found at path {path}");
 
-            return new ReadFileInfo(Path.GetFileName(path), File.OpenRead(path));
+            return new Package(Path.GetFileName(path), File.OpenRead(path));
         }
     }
 }

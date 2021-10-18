@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using Backups.Domain.Entities;
-using Backups.Domain.FileHandlers;
-using Backups.Domain.FileReaders;
+using Backups.Entities;
 
-namespace Backups.Core.FileArchivers
+namespace Backups.FileHandlers
 {
     public class ZipFileArchiver : IFileArchiver
     {
-        public void ArchiveFiles(List<ReadFileInfo> files, Stream writeStream)
+        public void ArchiveFiles(List<Package> files, Stream writeStream)
         {
             ArgumentNullException.ThrowIfNull(files, nameof(files));
             ArgumentNullException.ThrowIfNull(writeStream, nameof(writeStream));
@@ -24,12 +22,12 @@ namespace Backups.Core.FileArchivers
             }
         }
 
-        public List<ReadFileInfo> DearchiveFile(ReadFileInfo archiveContent)
+        public List<Package> DearchiveFile(Package archiveContent)
         {
             ArgumentNullException.ThrowIfNull(archiveContent, nameof(archiveContent));
             using var archive = new ZipArchive(archiveContent.Content, ZipArchiveMode.Read);
 
-            var fileInfos = new List<ReadFileInfo>();
+            var fileInfos = new List<Package>();
 
             foreach (var entry in archive.Entries)
             {
@@ -38,7 +36,7 @@ namespace Backups.Core.FileArchivers
                 using var entryStream = entry.Open();
                 entryStream.CopyTo(stream);
                 stream.Seek(0, SeekOrigin.Begin);
-                fileInfos.Add(new ReadFileInfo(name, stream));
+                fileInfos.Add(new Package(name, stream));
             }
 
             return fileInfos;

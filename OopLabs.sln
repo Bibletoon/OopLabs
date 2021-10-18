@@ -36,7 +36,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backups.Server", "Backups.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backups.Client", "Backups.Client\Backups.Client.csproj", "{5AB2BB61-3E2A-44D1-8539-6A9837E558F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backups.Server.Common", "Backups.Server.Common\Backups.Server.Common.csproj", "{684AC0D2-2ECC-4C1A-BD2D-0D25B8F89B07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backups.Tcp.Common", "Backups.Tcp.Common\Backups.Tcp.Common.csproj", "{684AC0D2-2ECC-4C1A-BD2D-0D25B8F89B07}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

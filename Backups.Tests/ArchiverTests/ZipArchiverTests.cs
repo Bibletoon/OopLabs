@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
-using Backups.Core.FileArchivers;
-using Backups.Domain.Entities;
+using Backups.Entities;
+using Backups.FileHandlers;
 using NUnit.Framework;
 
 namespace Backups.Tests.ArchiverTests
@@ -24,18 +24,18 @@ namespace Backups.Tests.ArchiverTests
             writerA.Write("a.txt");
             writerA.Close();
             fileAContent.Seek(0, SeekOrigin.Begin);
-            ReadFileInfo fileA = new ReadFileInfo("a.txt", fileAContent);
+            Package fileA = new Package("a.txt", fileAContent);
             
             using var fileBContent = new MemoryStream();
             var writerB = new StreamWriter(fileBContent, leaveOpen: true);
             writerB.Write("b.txt");
             writerB.Close();
             fileBContent.Seek(0, SeekOrigin.Begin);
-            ReadFileInfo fileB = new ReadFileInfo("b.txt", fileBContent);
+            Package fileB = new Package("b.txt", fileBContent);
 
             using var resultStream = new MemoryStream();
-            _archiver.ArchiveFiles(new List<ReadFileInfo>(){fileA, fileB}, resultStream);
-            using var resultArchive = new ReadFileInfo("archive.zip", resultStream);
+            _archiver.ArchiveFiles(new List<Package>(){fileA, fileB}, resultStream);
+            using var resultArchive = new Package("archive.zip", resultStream);
             var dearchivedFiles = _archiver.DearchiveFile(resultArchive);
 
             foreach (var file in dearchivedFiles)

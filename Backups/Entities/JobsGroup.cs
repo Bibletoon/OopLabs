@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Backups.Domain.Models;
+using Backups.Models;
 
-namespace Backups.Domain.Entities
+namespace Backups.Entities
 {
     public class JobsGroup
     {

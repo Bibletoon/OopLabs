@@ -1,13 +1,12 @@
-﻿using Backups.Domain.FileReaders;
-using Backups.Domain.Models;
+﻿using Backups.FileHandlers;
+using Backups.FileReaders;
+using Backups.Models;
 
 namespace Backups.Tools.BackupJobBuilder
 {
     public interface IFinalJobBuilder
     {
-        IFinalJobBuilder SetFileReader<T>()
-            where T : class, IFileReader;
-
+        IFinalJobBuilder SetFileArchiver(IFileArchiver fileArchiver);
         BackupJob Build();
     }
 }

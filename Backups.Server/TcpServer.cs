@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
+using Backups.Entities;
 using Backups.TcpServer.Common;
 using Backups.TcpServer.Common.Commands;
 
@@ -10,16 +11,18 @@ namespace Backups.Server
 {
     public class TcpServer
     {
-        private bool _canRun = true;
-        
+        private ConnectionConfig _config;
+
+        public TcpServer(ConnectionConfig config)
+        {
+            _config = config;
+        }
+
         public void Run()
         {
-            _canRun = true;
-            IPAddress localAddress = IPAddress.Parse("127.0.0.1");
-            int port = 8080;
-            TcpListener server = new TcpListener(localAddress, port);
+            TcpListener server = new TcpListener(IPAddress.Parse(_config.Ip), _config.Port);
             server.Start();
-            while (_canRun)
+            while (true)
             {
                 TcpClient client = server.AcceptTcpClient();
                 using NetworkStream stream = client.GetStream();
@@ -31,11 +34,6 @@ namespace Backups.Server
                 
                 ProceedCommand(info, stream);
             }
-        }
-
-        public void Stop()
-        {
-            _canRun = false;
         }
 
         private void ProceedCommand(CommandInfo info, Stream stream)
@@ -62,11 +60,13 @@ namespace Backups.Server
                 
             for (int index = 0; index < info.Count; index++)
             {
-                byte[] archive = AcceptBytes(stream);
+                byte[] archiveBytes = AcceptBytes(stream);
+                using Package archive = JsonSerializer.Deserialize<Package>(archiveBytes);
                 using var archiveFileStream = new FileStream(
-                    $"{localBackupPath}/{index}{info.ArchiveFormat}",
+                    $"{localBackupPath}/{archive.Name}",
                     FileMode.Create);
-                archiveFileStream.Write(archive);
+                
+                archive.Content.CopyTo(archiveFileStream);
             }
         }
 

@@ -1,11 +1,14 @@
 using System;
 using System.IO;
+using System.Text.Json.Serialization;
+using Backups.Tools;
 
-namespace Backups.Domain.Entities
+namespace Backups.Entities
 {
-    public class ReadFileInfo : IDisposable
+    [JsonConverter(typeof(PackageConverter))]
+    public class Package : IDisposable
     {
-        public ReadFileInfo(string name, Stream content)
+        public Package(string name, Stream content)
         {
             Name = name;
             Content = content;

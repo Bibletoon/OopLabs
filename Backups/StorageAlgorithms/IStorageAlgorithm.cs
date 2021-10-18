@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Backups.Domain.Entities;
-using Backups.Domain.Models;
+using Backups.Entities;
+using Backups.Models;
 
-namespace Backups.Domain.StorageAlgorithms
+namespace Backups.StorageAlgorithms
 {
     public interface IStorageAlgorithm
     {

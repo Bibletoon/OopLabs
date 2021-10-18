@@ -1,10 +1,9 @@
-﻿using Backups.Domain.StorageAlgorithms;
+﻿using Backups.StorageAlgorithms;
 
 namespace Backups.Tools.BackupJobBuilder
 {
     public interface ISetStorageAlgorithmJobBuilder
     {
-        ISetStorageJobBuilder SetStorageAlgorithm<T>()
-            where T : class, IStorageAlgorithm;
+        ISetStorageJobBuilder SetStorageAlgorithm(IStorageAlgorithm algorithm);
     }
 }

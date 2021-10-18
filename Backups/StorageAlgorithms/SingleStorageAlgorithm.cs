@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Backups.Domain.Entities;
-using Backups.Domain.Models;
-using Backups.Domain.StorageAlgorithms;
+using Backups.Entities;
+using Backups.Models;
 
-namespace Backups.Core.StorageAlgorithms
+namespace Backups.StorageAlgorithms
 {
     public class SingleStorageAlgorithm : IStorageAlgorithm
     {
