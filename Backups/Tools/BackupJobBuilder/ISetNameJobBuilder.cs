@@ -3,10 +3,8 @@ using Backups.Domain.Models;
 
 namespace Backups.Tools.BackupJobBuilder
 {
-    public interface ISetNameOrLoadJobBuilder
+    public interface ISetNameJobBuilder
     {
-        List<BackupJob> LoadJobs();
-
         public ISetStorageAlgorithmJobBuilder SetName(string name);
     }
 }

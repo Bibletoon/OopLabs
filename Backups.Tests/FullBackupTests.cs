@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
-using Backups.Core.ConfigProviders;
+using Backups.Core.FileReaders;
 using Backups.Core.StorageAlgorithms;
 using Backups.Core.Storages;
 using Backups.Domain.Models;
@@ -28,7 +28,7 @@ namespace Backups.Tests
                 { "jobsPath", _jobsPath },
             }).Build();
             _job = new BackupJobBuilder(configuration)
-                      .SetConfigProvider<InMemoryConfigProvider>()
+                      .SetFileReader<LocalFileReader>()
                       .SetName(_jobName)
                       .SetStorageAlgorithm<SplitStorageAlgorithm>()
                       .SetStorage<LocalStorage>()

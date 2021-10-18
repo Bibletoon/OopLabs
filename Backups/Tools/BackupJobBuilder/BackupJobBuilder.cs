@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using Backups.Core.FileArchivers;
 using Backups.Core.FileReaders;
-using Backups.Core.RestorePoints.RestorePointsCleaners;
-using Backups.Core.RestorePoints.RestorePointsLimters;
-using Backups.Domain.ConfigProviders;
 using Backups.Domain.FileHandlers;
 using Backups.Domain.FileReaders;
 using Backups.Domain.Models;
-using Backups.Domain.RestorePoitnts.RestorePointsCleaners;
-using Backups.Domain.RestorePoitnts.RestorePointsLimters;
 using Backups.Domain.StorageAlgorithms;
 using Backups.Domain.Storages;
-using Backups.Tools.Exceptions;
 using Backups.Tools.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,10 +13,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Backups.Tools.BackupJobBuilder
 {
     public class BackupJobBuilder
-        : ISetNameOrLoadJobBuilder,
-          ISetStorageAlgorithmJobBuilder,
+        : ISetNameJobBuilder,
           ISetStorageJobBuilder,
-          ISetCleanerJobBuilder,
+          ISetStorageAlgorithmJobBuilder,
           IFinalJobBuilder
     {
         private readonly ServiceCollection _serviceCollection;
@@ -33,28 +25,17 @@ namespace Backups.Tools.BackupJobBuilder
         {
             _serviceCollection = new ServiceCollection();
             _serviceCollection.AddTransient(provider => configuration);
-            _serviceCollection.AddTransient<IRestorePointsCleaner, EmptyRestorePointsCleaner>();
-            _serviceCollection.AddTransient<IRestorePointsLimiter, EmptyRestorePointsLimiter>();
             _serviceCollection.AddTransient<IFileArchiver, ZipFileArchiver>();
-            _serviceCollection.AddTransient<IFileReader, LocalFileReader>();
         }
 
-        public ISetNameOrLoadJobBuilder SetConfigProvider<T>()
-            where T : class, IConfigProvider
+        public ISetNameJobBuilder SetFileReader<T>()
+            where T : class, IFileReader
         {
-            _serviceCollection.AddSingleton<IConfigProvider, T>();
+            _serviceCollection.AddTransient<IFileReader, T>();
             return this;
         }
 
-        List<BackupJob> ISetNameOrLoadJobBuilder.LoadJobs()
-        {
-            IConfigProvider configProvider = _serviceCollection.BuildServiceProvider().GetService<IConfigProvider>();
-            if (configProvider is null)
-                throw BackupJobException.ServiceIsMissing(nameof(IConfigProvider));
-            return configProvider.LoadJobs();
-        }
-
-        ISetStorageAlgorithmJobBuilder ISetNameOrLoadJobBuilder.SetName(string name)
+        ISetStorageAlgorithmJobBuilder ISetNameJobBuilder.SetName(string name)
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
             _name = name;
@@ -73,24 +54,10 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
-        ISetCleanerJobBuilder IFinalJobBuilder.SetPointsLimiter<T>()
-        {
-            _serviceCollection.Remove<IRestorePointsLimiter>();
-            _serviceCollection.AddScoped<IRestorePointsLimiter, T>();
-            return this;
-        }
-
         IFinalJobBuilder IFinalJobBuilder.SetFileReader<T>()
         {
             _serviceCollection.Remove<IFileReader>();
             _serviceCollection.AddTransient<IFileReader, T>();
-            return this;
-        }
-
-        IFinalJobBuilder ISetCleanerJobBuilder.SetRestorePointsCleaner<T>()
-        {
-            _serviceCollection.Remove<IRestorePointsCleaner>();
-            _serviceCollection.AddScoped<IRestorePointsCleaner, T>();
             return this;
         }
 

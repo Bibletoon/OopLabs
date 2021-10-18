@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Backups.Client;
-using Backups.Core.ConfigProviders;
+using Backups.Core.FileReaders;
 using Backups.Core.StorageAlgorithms;
 using Backups.Domain.Models;
 using Backups.Tools.BackupJobBuilder;
@@ -13,7 +13,7 @@ var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Diction
     {"serverPort", "8080"}
 }).Build();
 var job = new BackupJobBuilder(configuration)
-          .SetConfigProvider<InMemoryConfigProvider>()
+          .SetFileReader<LocalFileReader>()
           .SetName("job")
           .SetStorageAlgorithm<SingleStorageAlgorithm>()
           .SetStorage<TcpStorage>()

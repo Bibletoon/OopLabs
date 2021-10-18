@@ -6,7 +6,6 @@ using Backups.Domain.Entities;
 using Backups.Domain.FileHandlers;
 using Backups.Domain.FileReaders;
 using Backups.Domain.Models;
-using Backups.Domain.RestorePoitnts.RestorePointsCleaners;
 using Backups.Domain.StorageAlgorithms;
 using Backups.Domain.Storages;
 using Backups.Tools.Exceptions;
@@ -63,10 +62,6 @@ namespace Backups.Core.Storages
             }
 
             return new RestorePointInfo(creationDateTime, objects);
-        }
-
-        public void CleanRestorePoints(List<RestorePointInfo> points, IRestorePointsCleaner cleaner)
-        {
         }
     }
 }
