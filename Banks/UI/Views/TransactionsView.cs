@@ -81,7 +81,7 @@ namespace Banks.UI.Views
             };
 
             _transactionsTable.CellActivated += RevertTransaction;
-            AddStatusbarText("~Enter~ on row - Edit product price");
+            AddStatusbarText("~Enter~ on row - Cancel transaction");
 
             rightPane.Add(_transactionsTable);
 

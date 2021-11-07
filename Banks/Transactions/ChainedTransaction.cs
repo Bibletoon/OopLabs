@@ -16,8 +16,8 @@ namespace Banks.Transactions
         {
         }
 
-        protected ChainedTransaction ParentTransaction { get; set; }
-        protected ChainedTransaction ChildTransaction { get; set; }
+        public ChainedTransaction ParentTransaction { get; private set; }
+        public ChainedTransaction ChildTransaction { get; private set; }
 
         internal override void Revert()
         {

@@ -208,9 +208,11 @@ namespace Banks.Banks
 
         private void NotifyUsers(NotificationType notificationType, string message)
         {
-            _accounts.Where(acc => _subscribedClients.Contains(acc.GetClient())).Distinct().ToList().ForEach(
-                n => n.Proceed(
-                    new NotifyCommand(notificationType, $"Notification of type {notificationType.ToString()}")));
+            _accounts.Where(
+                acc => _subscribedClients.Contains(acc.GetClient())).Distinct().ToList().ForEach(
+                n => n.Proceed(new NotifyCommand(
+                                                 notificationType,
+                                                 $"Notification of type {notificationType.ToString()}")));
         }
     }
 }
