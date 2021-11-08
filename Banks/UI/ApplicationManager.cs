@@ -48,8 +48,9 @@ namespace Banks.UI
         private void MockData()
         {
             var bank = _serviceProvider.GetRequiredService<Bank>();
+            var centralBank = _serviceProvider.GetRequiredService<CentralBank>();
 
-            new DataFaker(bank).CreateData();
+            new DataFaker(centralBank, bank).CreateData();
         }
 
         private void InitializeViewModels(IServiceCollection serviceCollection)
