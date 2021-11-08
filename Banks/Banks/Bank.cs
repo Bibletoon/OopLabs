@@ -15,8 +15,6 @@ namespace Banks.Banks
 {
     public class Bank
     {
-        private readonly BanksDbContext _dbContext;
-        private Guid _id = Guid.NewGuid();
         private BankConfiguration _configuration;
         private List<FinalWrapper> _accounts = new List<FinalWrapper>();
         private List<Client> _subscribedClients = new List<Client>();
@@ -27,7 +25,6 @@ namespace Banks.Banks
             BanksDbContext dbContext,
             BankConfiguration configuration)
         {
-            _dbContext = dbContext;
             _dateTimeProvider = dbContext.GetDateTimeProvider();
             _centralBank = dbContext.GetCentralBank();
             _configuration = configuration;
@@ -35,19 +32,25 @@ namespace Banks.Banks
 
         private Bank(BanksDbContext dbContext)
         {
-            _dbContext = dbContext;
             _dateTimeProvider = dbContext.GetDateTimeProvider();
             _centralBank = dbContext.GetCentralBank();
         }
 
-        public List<BankAccount> GetAccounts() => _accounts.Cast<BankAccount>().ToList();
+        public Guid Id { get; private init; } = Guid.NewGuid();
+
+        public List<FinalWrapper> GetAccounts() => _accounts.ToList();
 
         public BankAccount FindAccount(Guid id)
         {
             return _accounts.Find(a => a.GetId() == id);
         }
 
-        public BankAccount CreateDepositAccount(Client client, decimal startBalance)
+        public Transaction FindTransaction(Guid id)
+        {
+            return _accounts.SelectMany(a => a.GetTransactionsHistory()).FirstOrDefault(t => t.Id == id);
+        }
+
+        internal FinalWrapper CreateDepositAccount(Client client, decimal startBalance)
         {
             ArgumentNullException.ThrowIfNull(client, nameof(client));
             var account = new BankAccountBuilder(startBalance, client)
@@ -58,13 +61,10 @@ namespace Banks.Banks
                           .AddTimeLimit(_dateTimeProvider, _configuration.DepositAccountConfiguration.TimeLimitPlan)
                           .Build();
             _accounts.Add(account);
-            _dbContext.Accounts.Add(account);
-            _dbContext.Banks.Update(this);
-            _dbContext.SaveChanges();
             return account;
         }
 
-        public BankAccount CreateDebitAccount(Client client, decimal startBalance)
+        internal FinalWrapper CreateDebitAccount(Client client, decimal startBalance)
         {
             ArgumentNullException.ThrowIfNull(client, nameof(client));
             var account = new BankAccountBuilder(startBalance, client)
@@ -75,13 +75,10 @@ namespace Banks.Banks
                               _configuration.UnconfirmedClientLimits)
                           .Build();
             _accounts.Add(account);
-            _dbContext.Accounts.Add(account);
-            _dbContext.Banks.Update(this);
-            _dbContext.SaveChanges();
             return account;
         }
 
-        public BankAccount CreateCreditAccount(Client client, decimal startBalance)
+        internal FinalWrapper CreateCreditAccount(Client client, decimal startBalance)
         {
             ArgumentNullException.ThrowIfNull(client, nameof(client));
             var account = new BankAccountBuilder(startBalance, client)
@@ -92,104 +89,67 @@ namespace Banks.Banks
                               _configuration.UnconfirmedClientLimits)
                           .Build();
             _accounts.Add(account);
-            _dbContext.Accounts.Add(account);
-            _dbContext.Banks.Update(this);
-            _dbContext.SaveChanges();
             return account;
         }
 
-        public Transaction WithdrawMoney(Guid accountId, decimal amount)
+        internal Transaction WithdrawMoney(BankAccount account, decimal amount)
         {
-            var account = _accounts.Find(a => a.GetId() == accountId)
-                          ?? throw new Exception("Wrong account id");
             var transaction = new BasicTransaction(_dateTimeProvider.Now(), new WithdrawCommand(amount), account);
             transaction.Apply();
-            _dbContext.Transactions.Add(transaction);
-            _dbContext.Update(account);
-            _dbContext.SaveChanges();
             return transaction;
         }
 
-        public Transaction TransferMoney(Guid fromAccountId, Guid toAccountId, decimal amount)
+        internal Transaction TransferMoney(BankAccount fromAccount, BankAccount toAccount, decimal amount)
         {
-            var fromAccount = FindAccount(fromAccountId)
-                          ?? throw new Exception("Account not found");
-            var toAccount = _centralBank.FindAccount(toAccountId)
-                          ?? throw new Exception("Account not found");
-
             var currentDateTime = _dateTimeProvider.Now();
             var withdrawTransaction = new BasicChainedTransaction(currentDateTime, new WithdrawCommand(amount), fromAccount);
             var addTransaction = new StraightChainedTransaction(currentDateTime, new DepositCommand(amount), toAccount, withdrawTransaction);
             withdrawTransaction.Apply();
-            _dbContext.Transactions.Add(withdrawTransaction);
-            _dbContext.Transactions.Add(addTransaction);
-            _dbContext.SaveChanges();
             return withdrawTransaction;
         }
 
-        public Transaction DepositMoney(Guid accountId, decimal amount)
+        internal Transaction DepositMoney(BankAccount account, decimal amount)
         {
-            var account = FindAccount(accountId)
-                          ?? throw new Exception("Account not found");
-
             var transaction = new BasicTransaction(_dateTimeProvider.Now(), new DepositCommand(amount), account);
             transaction.Apply();
-            _dbContext.Transactions.Add(transaction);
-            _dbContext.Update(account);
-            _dbContext.SaveChanges();
             return transaction;
         }
 
-        public void RevertTransaction(Guid transactionId)
+        internal void RevertTransaction(Transaction transaction)
         {
-           var transaction = _accounts.SelectMany(a => a.GetTransactionsHistory()).FirstOrDefault(t => t.Id == transactionId);
-
-           if (transaction is null)
-               throw new Exception("Can't find transaction with such id");
-
-           transaction.Revert();
-           _dbContext.Transactions.Update(transaction);
-           _dbContext.SaveChanges();
+            transaction.Revert();
         }
 
-        public void Subscribe(Client client)
+        internal void Subscribe(Client client)
         {
             ArgumentNullException.ThrowIfNull(client, nameof(client));
             if (!_subscribedClients.Contains(client))
                 _subscribedClients.Add(client);
         }
 
-        public void ChangeDepositPercentage(PercentagePlan newPlan)
+        internal void ChangeDepositPercentage(PercentagePlan newPlan)
         {
             ArgumentNullException.ThrowIfNull(newPlan, nameof(newPlan));
             _configuration.DepositAccountConfiguration.PercentagePlan.ChangeConfiguration(newPlan);
-            _dbContext.BankConfigurations.Update(_configuration);
-            _dbContext.SaveChanges();
             NotifyUsers(NotificationType.Deposit, "Deposit percentage was changed");
         }
 
-        public void ChangeDebitPercentage(PercentagePlan newPlan)
+        internal void ChangeDebitPercentage(PercentagePlan newPlan)
         {
             ArgumentNullException.ThrowIfNull(newPlan, nameof(newPlan));
             _configuration.DebitAccountConfiguration.PercentagePlan.ChangeConfiguration(newPlan);
-            _dbContext.BankConfigurations.Update(_configuration);
-            _dbContext.SaveChanges();
             NotifyUsers(NotificationType.Debit, "Debit percentage was changed");
         }
 
-        public void ChangeCreditLimit(decimal limit)
+        internal void ChangeCreditLimit(decimal limit)
         {
             _configuration.CreditAccountConfiguration.LimitPlan.Limit = limit;
-            _dbContext.BankConfigurations.Update(_configuration);
-            _dbContext.SaveChanges();
             NotifyUsers(NotificationType.Credit, "Credit limit was changed");
         }
 
-        public void ChangeUnconfirmedClientLimit(decimal newLimit)
+        internal void ChangeUnconfirmedClientLimit(decimal newLimit)
         {
             _configuration.UnconfirmedClientLimits.WithdrawLimit = newLimit;
-            _dbContext.BankConfigurations.Update(_configuration);
-            _dbContext.SaveChanges();
             NotifyUsers(NotificationType.All, "Limits for unconfirmed clients was changed");
         }
 
@@ -199,11 +159,7 @@ namespace Banks.Banks
             {
                 var transaction = new BasicTransaction(_dateTimeProvider.Now(), new PayFeesCommand(), account);
                 transaction.Apply();
-                _dbContext.Transactions.Add(transaction);
-                _dbContext.Update(account);
             }
-
-            _dbContext.SaveChanges();
         }
 
         private void NotifyUsers(NotificationType notificationType, string message)

@@ -138,6 +138,7 @@ namespace Banks.Data
         protected void ConfigureCommands(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Command>().HasKey("Id");
+            modelBuilder.Entity<Command>().Property("Id").ValueGeneratedNever();
 
             modelBuilder.Entity<BalanceIncreaseCommand>();
             modelBuilder.Entity<BalanceDecreaseCommand>();
@@ -156,7 +157,7 @@ namespace Banks.Data
             modelBuilder.Entity<Bank>().HasOne("_configuration");
             modelBuilder.Entity<Bank>().HasMany("_accounts");
             modelBuilder.Entity<Bank>().HasMany("_subscribedClients");
-            modelBuilder.Entity<Bank>().HasKey("_id");
+            modelBuilder.Entity<Bank>().HasKey("Id");
         }
 
         protected void ConfigurePlans(ModelBuilder modelBuilder)
@@ -173,6 +174,7 @@ namespace Banks.Data
         protected void ConfigureTransactions(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Transaction>();
+            modelBuilder.Entity<Transaction>().Property(t => t.Id).ValueGeneratedNever();
             modelBuilder.Entity<BasicTransaction>().HasOne("_command");
             modelBuilder.Entity<BasicTransaction>().HasOne("_account");
             modelBuilder.Entity<ChainedTransaction>().HasOne("ChildTransaction").WithOne("ParentTransaction");

@@ -1,4 +1,5 @@
 using System;
+using System.Transactions;
 using Banks.Accounts;
 using Banks.Commands;
 using Banks.Commands.CommandType;
@@ -25,7 +26,7 @@ namespace Banks.Transactions
         internal override void Revert()
         {
             if (Status != TransactionStatus.Completed)
-                throw new Exception("Transaction can't be reverted");
+                throw new TransactionException("Transaction can't be reverted");
 
             try
             {
@@ -34,14 +35,14 @@ namespace Banks.Transactions
             }
             catch (Exception e)
             {
-                throw new Exception("Transaction can't be canceled", e);
+                throw new TransactionException("Transaction can't be canceled", e);
             }
         }
 
         internal override void Apply()
         {
             if (Status != TransactionStatus.Created)
-                throw new Exception("Transaction can't be run");
+                throw new TransactionException("Transaction can't be run");
             try
             {
                 _account.Proceed(_command);

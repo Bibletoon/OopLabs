@@ -1,4 +1,5 @@
 using System;
+using System.Transactions;
 
 namespace Banks.Transactions
 {
@@ -29,7 +30,7 @@ namespace Banks.Transactions
         internal override void Apply()
         {
             if (Status != TransactionStatus.Created)
-                throw new Exception("Transaction already applied");
+                throw new TransactionException("Transaction already applied");
 
             ApplyThis();
 
@@ -47,7 +48,7 @@ namespace Banks.Transactions
         protected void SetChainedTransaction(ChainedTransaction transaction)
         {
             if (ChildTransaction is not null)
-                throw new Exception("ChainedTransaction already exists");
+                throw new TransactionException("ChainedTransaction already exists");
 
             ChildTransaction = transaction;
         }

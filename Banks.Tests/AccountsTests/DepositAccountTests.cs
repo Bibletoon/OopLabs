@@ -12,7 +12,7 @@ namespace Banks.Tests
     public class DepositAccountTests : CommonAccountsTests 
     {
         protected override BankAccount CreateAccount(decimal startSum, Client client)
-            => Bank.CreateDepositAccount(client, startSum);
+            => CentralBank.CreateDepositAccount(Bank.Id, client, startSum);
 
         [Test]
         public void WithdrawMoneyBeforeTimeLimitEnded_TransactionFailed()
@@ -20,7 +20,7 @@ namespace Banks.Tests
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var account = CreateAccount(1000, client);
 
-            var transaction = Bank.WithdrawMoney(account.GetId(), 1);
+            var transaction = CentralBank.WithdrawMoney(Bank.Id, account.GetId(), 1);
             Assert.AreEqual(transaction.Status, TransactionStatus.Failed);
         }
 
@@ -31,9 +31,9 @@ namespace Banks.Tests
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var account = CreateAccount(startSum, client);
             DateTimeProvider.CurrentDateTime = DateTimeProvider.CurrentDateTime.AddDays(5);
-            var transaction = Bank.WithdrawMoney(account.GetId(), withdrawAmount);
+            var transaction = CentralBank.WithdrawMoney(Bank.Id, account.GetId(), withdrawAmount);
             Assert.AreEqual(startSum-withdrawAmount, account.GetBalance());
-            Bank.RevertTransaction(transaction.Id);
+            CentralBank.RevertTransaction(Bank.Id, transaction.Id);
             Assert.AreEqual(startSum, account.GetBalance());
         }
         
@@ -43,7 +43,7 @@ namespace Banks.Tests
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var account = CreateAccount(10, client);
             DateTimeProvider.CurrentDateTime = DateTimeProvider.CurrentDateTime.AddDays(5);
-            var transaction = Bank.WithdrawMoney(account.GetId(), 20);
+            var transaction = CentralBank.WithdrawMoney(Bank.Id, account.GetId(), 20);
             Assert.AreEqual(transaction.Status, TransactionStatus.Failed);
         }
 
@@ -53,7 +53,7 @@ namespace Banks.Tests
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var account = CreateAccount(1000, client);
             DateTimeProvider.CurrentDateTime = DateTimeProvider.CurrentDateTime.AddDays(5);
-            var transaction = Bank.WithdrawMoney(account.GetId(), 100);
+            var transaction = CentralBank.WithdrawMoney(Bank.Id, account.GetId(), 100);
             Assert.AreEqual(transaction.Status, TransactionStatus.Failed);
         }
 
@@ -65,10 +65,10 @@ namespace Banks.Tests
             var firstAccount = CreateAccount(startSum, client);
             var secondAccount = CreateAccount(startSum, client);
             DateTimeProvider.CurrentDateTime = DateTimeProvider.CurrentDateTime.AddDays(5);
-            var transaction = Bank.TransferMoney(firstAccount.GetId(), secondAccount.GetId(), transferSum);
+            var transaction = CentralBank.TransferMoney(Bank.Id, firstAccount.GetId(), secondAccount.GetId(), transferSum);
             Assert.AreEqual(startSum-transferSum, firstAccount.GetBalance());
             Assert.AreEqual(startSum+transferSum, secondAccount.GetBalance());
-            Bank.RevertTransaction(transaction.Id);
+            CentralBank.RevertTransaction(Bank.Id, transaction.Id);
             Assert.AreEqual(startSum, firstAccount.GetBalance());
             Assert.AreEqual(startSum, secondAccount.GetBalance());
         }
@@ -95,9 +95,9 @@ namespace Banks.Tests
             var client = ClientService.CreateClientBuilder("name", "surname").SetAddress("Address").SetPassportNumber(1000).Build();
             var account = CreateAccount(10000, client);
             DateTimeProvider.CurrentDateTime = DateTimeProvider.CurrentDateTime.AddDays(1);
-            Bank.DepositMoney(account.GetId(), 1000);
+            CentralBank.DepositMoney(Bank.Id, account.GetId(), 1000);
             DateTimeProvider.CurrentDateTime = DateTimeProvider.CurrentDateTime.AddDays(1);
-            Bank.WithdrawMoney(account.GetId(), 2000);
+            CentralBank.WithdrawMoney(Bank.Id, account.GetId(), 2000);
             DateTimeProvider.CurrentDateTime = DateTimeProvider.CurrentDateTime.AddDays(2);
             CentralBank.NotifyAboutFeePayment();
             Assert.AreEqual(9300, account.GetBalance());

@@ -9,14 +9,14 @@ namespace Banks.Tests
     [TestFixture]
     public class DebitAccountTests : CommonAccountsTests
     {
-        protected override BankAccount CreateAccount(decimal startSum, Client client) => Bank.CreateDebitAccount(client, startSum);
+        protected override BankAccount CreateAccount(decimal startSum, Client client) => CentralBank.CreateDebitAccount(Bank.Id, client, startSum);
         
         [Test]
         public void WithdrawMoreThanAvailable_TransactionFailed()
         {
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var account = CreateAccount(10, client);
-            var transaction = Bank.WithdrawMoney(account.GetId(), 20);
+            var transaction = CentralBank.WithdrawMoney(Bank.Id, account.GetId(), 20);
             Assert.AreEqual(transaction.Status, TransactionStatus.Failed);
         }
         

@@ -21,8 +21,8 @@ namespace Banks.Tests
         protected Bank Bank;
         protected ClientService ClientService;
         
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
+        [SetUp]
+        public void SetUp()
         {
             var options = new DbContextOptionsBuilder<BanksDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
             DateTimeProvider = new TestDateTimeProvider();
@@ -52,10 +52,10 @@ namespace Banks.Tests
         {
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var account = CreateAccount(amount, client);
-            var transaction = Bank.DepositMoney(account.GetId(), depositAmount);
+            var transaction = CentralBank.DepositMoney(Bank.Id, account.GetId(), depositAmount);
             Assert.AreEqual(amount + depositAmount, account.GetBalance());
 
-            Bank.RevertTransaction(transaction.Id);
+            CentralBank.RevertTransaction(Bank.Id, transaction.Id);
 
             Assert.AreEqual(amount, account.GetBalance());
         }
@@ -67,10 +67,10 @@ namespace Banks.Tests
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var firstAccount = CreateAccount(startSum, client);
             var secondAccount = CreateAccount(startSum, client);
-            var transaction = Bank.TransferMoney(firstAccount.GetId(), secondAccount.GetId(), transferSum);
+            var transaction = CentralBank.TransferMoney(Bank.Id, firstAccount.GetId(), secondAccount.GetId(), transferSum);
             Assert.AreEqual(startSum-transferSum, firstAccount.GetBalance());
             Assert.AreEqual(startSum+transferSum, secondAccount.GetBalance());
-            Bank.RevertTransaction(transaction.Id);
+            CentralBank.RevertTransaction(Bank.Id, transaction.Id);
             Assert.AreEqual(startSum, firstAccount.GetBalance());
             Assert.AreEqual(startSum, secondAccount.GetBalance());
         }
@@ -80,7 +80,7 @@ namespace Banks.Tests
         {
             var client = ClientService.CreateClientBuilder("name", "surname").Build();
             var account = CreateAccount(1000, client);
-            var transaction = Bank.WithdrawMoney(account.GetId(), 100);
+            var transaction = CentralBank.WithdrawMoney(Bank.Id, account.GetId(), 100);
             Assert.AreEqual(transaction.Status, TransactionStatus.Failed);
         }
 

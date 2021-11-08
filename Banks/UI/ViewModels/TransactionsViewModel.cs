@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Banks.Accounts;
 using Banks.Banks;
 using Banks.Transactions;
@@ -14,12 +15,14 @@ namespace Banks.UI.ViewModels
     {
         private TransactionsView _view;
         private Bank _bank;
+        private CentralBank _centralBank;
 
-        public TransactionsViewModel(Bank bank)
+        public TransactionsViewModel(Bank bank, CentralBank centralBank)
         {
             _bank = bank;
+            _centralBank = centralBank;
             _view = new TransactionsView(this);
-            GetAccountsQuery = new BaseQuery<List<BankAccount>>(_bank.GetAccounts);
+            GetAccountsQuery = new BaseQuery<List<BankAccount>>(GetAccounts);
             GetTransactionsByGuid = new BaseParametrizedQuery<List<Transaction>, Guid>(GetAccountTransactions);
             RevertTransactionCommand = new BaseParametrizedCommand<Guid>(RevertTransaction);
         }
@@ -38,11 +41,16 @@ namespace Banks.UI.ViewModels
             _view.Init(top);
         }
 
+        private List<BankAccount> GetAccounts()
+        {
+            return _bank.GetAccounts().Cast<BankAccount>().ToList();
+        }
+
         private CommandResult RevertTransaction(Guid arg)
         {
             try
             {
-                _bank.RevertTransaction(arg);
+                _centralBank.RevertTransaction(_bank.Id, arg);
                 return CommandResult.Success();
             }
             catch (Exception e)

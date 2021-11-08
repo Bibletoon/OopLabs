@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Banks.Accounts;
 using Banks.Banks;
 using Banks.Clients;
@@ -16,12 +17,14 @@ namespace Banks.UI.ViewModels
     {
         private AccountsView _view;
         private Bank _bank;
+        private CentralBank _centralBank;
 
-        public AccountsViewModel(Bank bank)
+        public AccountsViewModel(Bank bank, CentralBank centralBank)
         {
             _view = new AccountsView(this);
             _bank = bank;
-            GetAccountsQuery = new BaseQuery<List<BankAccount>>(bank.GetAccounts);
+            _centralBank = centralBank;
+            GetAccountsQuery = new BaseQuery<List<BankAccount>>(GetAccounts);
             WithdrawCommand = new BaseParametrizedCommand<SingleAccountBalanceChangeCommandArguments>(Withdraw);
             DepositCommand = new BaseParametrizedCommand<SingleAccountBalanceChangeCommandArguments>(Deposit);
             TransferCommand = new BaseParametrizedCommand<TransferCommandArguments>(Transfer);
@@ -42,9 +45,14 @@ namespace Banks.UI.ViewModels
             _view.Init(top);
         }
 
+        private List<BankAccount> GetAccounts()
+        {
+            return _bank.GetAccounts().Cast<BankAccount>().ToList();
+        }
+
         private CommandResult Withdraw(SingleAccountBalanceChangeCommandArguments arg)
         {
-            var transaction = _bank.WithdrawMoney(arg.AccountId, arg.Amount);
+            var transaction = _centralBank.WithdrawMoney(_bank.Id, arg.AccountId, arg.Amount);
             if (transaction.Status == TransactionStatus.Failed)
                 return CommandResult.Fail(transaction.Message);
             return CommandResult.Success();
@@ -52,7 +60,7 @@ namespace Banks.UI.ViewModels
 
         private CommandResult Deposit(SingleAccountBalanceChangeCommandArguments arg)
         {
-            var transaction = _bank.DepositMoney(arg.AccountId, arg.Amount);
+            var transaction = _centralBank.DepositMoney(_bank.Id, arg.AccountId, arg.Amount);
             if (transaction.Status == TransactionStatus.Failed)
                 return CommandResult.Fail(transaction.Message);
             return CommandResult.Success();
@@ -60,7 +68,7 @@ namespace Banks.UI.ViewModels
 
         private CommandResult Transfer(TransferCommandArguments arg)
         {
-            var transaction = _bank.TransferMoney(arg.AccountFromId, arg.AccountToId, arg.Amount);
+            var transaction = _centralBank.TransferMoney(_bank.Id, arg.AccountFromId, arg.AccountToId, arg.Amount);
             if (transaction.Status == TransactionStatus.Failed)
                 return CommandResult.Fail(transaction.Message);
             return CommandResult.Success();

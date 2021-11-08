@@ -2,6 +2,7 @@ using System;
 using Banks.Accounts;
 using Banks.Commands;
 using Banks.Commands.CommandType;
+using Banks.Tools.Exceptions;
 
 namespace Banks.Transactions
 {
@@ -52,7 +53,7 @@ namespace Banks.Transactions
             }
 
             if (Status != TransactionStatus.Completed)
-                throw new Exception("Can't revert not completed command");
+                throw new TransactionException("Can't revert not completed transaction");
 
             try
             {
@@ -61,7 +62,7 @@ namespace Banks.Transactions
             }
             catch (Exception e)
             {
-                throw new Exception("Can't revert command", e);
+                throw new TransactionException("Can't revert transaction", e);
             }
         }
     }
