@@ -17,7 +17,7 @@ namespace Backups.Tests
         private string _jobsPath;
         private string _testFolderPath;
         private BackupJob _job;
-        
+
         [OneTimeSetUp]
         public void SetUp()
         {
@@ -28,10 +28,12 @@ namespace Backups.Tests
                 { "jobsPath", _jobsPath },
             }).Build();
             _job = new BackupJobBuilder()
-                      .SetFileReader(new LocalFileReader())
+                      .SetFileReader<LocalFileReader>()
                       .SetName(_jobName)
-                      .SetStorageAlgorithm(new SplitStorageAlgorithm())
-                      .SetStorage(new LocalStorage())
+                      .SetStorageAlgorithm<SplitStorageAlgorithm>()
+                      .SetStorage<LocalStorage>()
+                      .SetLogger<TestLogger>()
+                      .SetDateTimeProvider<TestDateTimeProvider>()
                       .Build();
             _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}testFiles";
             SetUpTestFiles();

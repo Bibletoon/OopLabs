@@ -4,6 +4,7 @@ namespace Backups.Tools.BackupJobBuilder
 {
     public interface ISetStorageAlgorithmJobBuilder
     {
-        ISetStorageJobBuilder SetStorageAlgorithm(IStorageAlgorithm algorithm);
+        ISetStorageJobBuilder SetStorageAlgorithm<T>()
+            where T : class, IStorageAlgorithm;
     }
 }

@@ -6,7 +6,8 @@ namespace Backups.Tools.BackupJobBuilder
 {
     public interface IFinalJobBuilder
     {
-        IFinalJobBuilder SetFileArchiver(IFileArchiver fileArchiver);
+        IFinalJobBuilder SetFileArchiver<T>()
+            where T : class, IFileArchiver;
         BackupJob Build();
     }
 }

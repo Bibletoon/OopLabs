@@ -5,8 +5,10 @@ using Backups.Models;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
 using Backups.Tools.Exceptions;
-using Microsoft.Extensions.Configuration;
+using Backups.Tools.Extensions;
+using Backups.Tools.Logger;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Backups.Tools.BackupJobBuilder
 {
@@ -14,61 +16,94 @@ namespace Backups.Tools.BackupJobBuilder
         : ISetNameJobBuilder,
           ISetStorageJobBuilder,
           ISetStorageAlgorithmJobBuilder,
+          ISetLoggerJobBuilder,
+          ISetDateTimeProviderJobBuilder,
           IFinalJobBuilder
     {
-        private string _name;
-        private IFileReader _fileReader;
-        private IStorage _storage;
-        private IStorageAlgorithm _storageAlgorithm;
-        private IFileArchiver _fileArchiver;
+        private ServiceCollection _serviceCollection;
 
-        public ISetNameJobBuilder SetFileReader(IFileReader fileReader)
+        public BackupJobBuilder()
         {
-            ArgumentNullException.ThrowIfNull(fileReader, nameof(fileReader));
-            _fileReader = fileReader;
+            _serviceCollection = new ServiceCollection();
+            _serviceCollection.AddScoped<IFileArchiver, ZipFileArchiver>();
+        }
+
+        public ISetNameJobBuilder SetFileReader<T>()
+            where T : class, IFileReader
+        {
+            _serviceCollection.Remove<IFileReader>();
+            _serviceCollection.AddScoped<IFileReader, T>();
             return this;
         }
 
         ISetStorageAlgorithmJobBuilder ISetNameJobBuilder.SetName(string name)
         {
-            ArgumentNullException.ThrowIfNull(name, nameof(name));
-            _name = name;
+            _serviceCollection.Remove<string>();
+            _serviceCollection.AddSingleton<string>(name);
             return this;
         }
 
-        ISetStorageJobBuilder ISetStorageAlgorithmJobBuilder.SetStorageAlgorithm(IStorageAlgorithm algorithm)
+        ISetStorageJobBuilder ISetStorageAlgorithmJobBuilder.SetStorageAlgorithm<T>()
         {
-            ArgumentNullException.ThrowIfNull(algorithm, nameof(algorithm));
-            _storageAlgorithm = algorithm;
+            _serviceCollection.Remove<IStorageAlgorithm>();
+            _serviceCollection.AddScoped<IStorageAlgorithm, T>();
             return this;
         }
 
-        IFinalJobBuilder ISetStorageJobBuilder.SetStorage(IStorage storage)
+        ISetLoggerJobBuilder ISetStorageJobBuilder.SetStorage<T>()
         {
-            ArgumentNullException.ThrowIfNull(storage, nameof(storage));
-            _storage = storage;
+            _serviceCollection.Remove<IStorage>();
+            _serviceCollection.AddScoped<IStorage, T>();
             return this;
         }
 
-        public IFinalJobBuilder SetFileArchiver(IFileArchiver fileArchiver)
+        public ISetLoggerJobBuilder SetStorage<T, TConfig>(TConfig config)
+            where T : class, IStorage
+            where TConfig : class
         {
-            ArgumentNullException.ThrowIfNull(fileArchiver, nameof(fileArchiver));
-            _fileArchiver = fileArchiver;
+            _serviceCollection.Remove<IStorage>();
+            _serviceCollection.AddScoped<IStorage, T>();
+            _serviceCollection.Remove<TConfig>();
+            _serviceCollection.AddSingleton(config);
+            return this;
+        }
+
+        ISetDateTimeProviderJobBuilder ISetLoggerJobBuilder.SetLogger<T>()
+        {
+            _serviceCollection.Remove<ILogger>();
+            _serviceCollection.AddScoped<ILogger, T>();
+            return this;
+        }
+
+        public ISetDateTimeProviderJobBuilder SetLogger<T, TConfiguration>(TConfiguration configuration)
+            where T : class, ILogger
+            where TConfiguration : class
+        {
+            _serviceCollection.Remove<ILogger>();
+            _serviceCollection.AddScoped<ILogger, T>();
+            _serviceCollection.Remove<TConfiguration>();
+            _serviceCollection.AddSingleton(configuration);
+            return this;
+        }
+
+        IFinalJobBuilder ISetDateTimeProviderJobBuilder.SetDateTimeProvider<T>()
+        {
+            _serviceCollection.Remove<IDateTimeProvider>();
+            _serviceCollection.AddScoped<IDateTimeProvider, T>();
+            return this;
+        }
+
+        IFinalJobBuilder IFinalJobBuilder.SetFileArchiver<T>()
+        {
+            _serviceCollection.Remove<IFileArchiver>();
+            _serviceCollection.AddScoped<IFileArchiver, T>();
             return this;
         }
 
         BackupJob IFinalJobBuilder.Build()
         {
-            _ = _fileReader ?? throw BackupJobException.ServiceIsMissing(nameof(IFileReader));
-            _fileArchiver ??= new ZipFileArchiver();
-            _ = _storageAlgorithm ?? throw BackupJobException.ServiceIsMissing(nameof(IStorageAlgorithm));
-            _ = _storage ?? throw BackupJobException.ServiceIsMissing(nameof(IStorage));
-            return new BackupJob(
-                _name,
-                _fileReader,
-                _fileArchiver,
-                _storageAlgorithm,
-                _storage);
+            _serviceCollection.AddSingleton<BackupJob>();
+            return _serviceCollection.BuildServiceProvider().GetService<BackupJob>();
         }
     }
 }

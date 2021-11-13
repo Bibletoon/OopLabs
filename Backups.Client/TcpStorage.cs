@@ -13,6 +13,7 @@ using Backups.StorageAlgorithms;
 using Backups.Storages;
 using Backups.TcpServer.Common;
 using Backups.TcpServer.Common.Commands;
+using Backups.Tools;
 using Backups.Tools.Exceptions;
 using Microsoft.Extensions.Configuration;
 
@@ -21,7 +22,7 @@ namespace Backups.Client
     public class TcpStorage : IStorage
     {
         private ConnectionConfig _config;
-        
+
         public TcpStorage(ConnectionConfig config)
         {
             _config = config;
@@ -36,17 +37,17 @@ namespace Backups.Client
         public void WriteFiles(string folderPath, List<Package> files)
         {
             TcpClient client = new TcpClient();
-            
+
             client.Connect(_config.Ip,  _config.Port);
-            
+
             using NetworkStream clientStream = client.GetStream();
 
             var commandInfo = new CommandInfo(nameof(SaveCommand));
 
             byte[] infoBytes = JsonSerializer.SerializeToUtf8Bytes(commandInfo);
-            
+
             var command = new SaveCommand(folderPath, files.Count);
-            
+
             byte[] commandBytes = JsonSerializer.SerializeToUtf8Bytes(command);
 
             SendBytes(clientStream, infoBytes);
