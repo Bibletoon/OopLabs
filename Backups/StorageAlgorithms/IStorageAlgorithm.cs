@@ -6,6 +6,6 @@ namespace Backups.StorageAlgorithms
 {
     public interface IStorageAlgorithm
     {
-        List<JobsGroup> ProceedFiles(List<JobObject> jobObjects);
+        List<PackagesGroup> ProceedFiles(List<Package> packages);
     }
 }

@@ -1,14 +1,13 @@
-﻿using System;
-using Backups.FileHandlers;
+﻿using Backups.FileHandlers;
 using Backups.FileReaders;
 using Backups.Models;
+using Backups.RestorePointsCleaners;
+using Backups.RestorePointsLimiters;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
-using Backups.Tools.Exceptions;
 using Backups.Tools.Extensions;
 using Backups.Tools.Logger;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Backups.Tools.BackupJobBuilder
 {
@@ -18,6 +17,8 @@ namespace Backups.Tools.BackupJobBuilder
           ISetStorageAlgorithmJobBuilder,
           ISetLoggerJobBuilder,
           ISetDateTimeProviderJobBuilder,
+          ISetRestorePointsLimiterJobBuilder,
+          ISetRestorePointsCleanerJobBuilder,
           IFinalJobBuilder
     {
         private ServiceCollection _serviceCollection;
@@ -57,8 +58,7 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
-        public ISetLoggerJobBuilder SetStorage<T, TConfig>(TConfig config)
-            where T : class, IStorage
+        ISetLoggerJobBuilder ISetStorageJobBuilder.SetStorage<T, TConfig>(TConfig config)
             where TConfig : class
         {
             _serviceCollection.Remove<IStorage>();
@@ -75,8 +75,7 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
-        public ISetDateTimeProviderJobBuilder SetLogger<T, TConfiguration>(TConfiguration configuration)
-            where T : class, ILogger
+        ISetDateTimeProviderJobBuilder ISetLoggerJobBuilder.SetLogger<T, TConfiguration>(TConfiguration configuration)
             where TConfiguration : class
         {
             _serviceCollection.Remove<ILogger>();
@@ -86,10 +85,34 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
-        IFinalJobBuilder ISetDateTimeProviderJobBuilder.SetDateTimeProvider<T>()
+        ISetRestorePointsLimiterJobBuilder ISetDateTimeProviderJobBuilder.SetDateTimeProvider<T>()
         {
             _serviceCollection.Remove<IDateTimeProvider>();
             _serviceCollection.AddScoped<IDateTimeProvider, T>();
+            return this;
+        }
+
+        ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetRestorePointsCleaner<T>()
+        {
+            _serviceCollection.Remove<IRestorePointsLimiter>();
+            _serviceCollection.AddScoped<IRestorePointsLimiter, T>();
+            return this;
+        }
+
+        ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetRestorePointsCleaner<T, TConfig>(TConfig config)
+            where TConfig : class
+        {
+            _serviceCollection.Remove<IRestorePointsLimiter>();
+            _serviceCollection.AddScoped<IRestorePointsLimiter, T>();
+            _serviceCollection.Remove<TConfig>();
+            _serviceCollection.AddSingleton(config);
+            return this;
+        }
+
+        IFinalJobBuilder ISetRestorePointsCleanerJobBuilder.SetRestorePointsCleaner<T>()
+        {
+            _serviceCollection.Remove<IRestorePointsCleaner>();
+            _serviceCollection.AddScoped<IRestorePointsCleaner, T>();
             return this;
         }
 

@@ -5,19 +5,22 @@ using System.Linq;
 using Backups.Entities;
 using Backups.FileHandlers;
 using Backups.FileReaders;
+using Backups.RestorePointsCleaners;
+using Backups.RestorePointsLimiters;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
 using Backups.Tools;
 using Backups.Tools.Exceptions;
 using Backups.Tools.Logger;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Backups.Models
 {
     public class BackupJob
     {
         private readonly List<JobObject> _jobObjects;
-        private readonly List<RestorePointInfo> _restorePoitnts;
+        private readonly List<RestorePointInfo> _restorePoints;
+        private readonly IRestorePointsLimiter _limiter;
+        private readonly IRestorePointsCleaner _cleaner;
         private readonly IFileReader _fileReader;
         private readonly IFileArchiver _fileArchiver;
         private readonly IStorageAlgorithm _storageAlgorithm;
@@ -28,14 +31,18 @@ namespace Backups.Models
 
         public BackupJob(
             string name,
+            IRestorePointsLimiter limiter,
             IFileReader fileReader,
             IFileArchiver fileArchiver,
             IStorageAlgorithm storageAlgorithm,
             IStorage storage,
             IDateTimeProvider dateTimeProvider,
-            ILogger logger)
+            ILogger logger,
+            IRestorePointsCleaner cleaner)
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
+            ArgumentNullException.ThrowIfNull(limiter, nameof(limiter));
+            ArgumentNullException.ThrowIfNull(cleaner, nameof(cleaner));
             ArgumentNullException.ThrowIfNull(fileReader, nameof(fileReader));
             ArgumentNullException.ThrowIfNull(fileArchiver, nameof(fileArchiver));
             ArgumentNullException.ThrowIfNull(storageAlgorithm, nameof(storageAlgorithm));
@@ -43,14 +50,16 @@ namespace Backups.Models
             ArgumentNullException.ThrowIfNull(dateTimeProvider, nameof(dateTimeProvider));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
             _jobObjects = new List<JobObject>();
-            _restorePoitnts = new List<RestorePointInfo>();
+            _restorePoints = new List<RestorePointInfo>();
             _name = name;
+            _limiter = limiter;
             _fileReader = fileReader;
             _fileArchiver = fileArchiver;
             _storageAlgorithm = storageAlgorithm;
             _storage = storage;
             _dateTimeProvider = dateTimeProvider;
             _logger = logger;
+            _cleaner = cleaner;
         }
 
         public void AddJobObject(JobObject jobObject)
@@ -68,44 +77,39 @@ namespace Backups.Models
         public void Run()
         {
             _logger.Log($"Starting job {_name}");
-            List<JobsGroup> fileGroups = _storageAlgorithm.ProceedFiles(_jobObjects);
+
+            var pointsToClear = _limiter.GetPointsToClear(_restorePoints, _jobObjects);
+
+            var objectsToKeep = _cleaner.GetJobObjectsToKeep(pointsToClear, _jobObjects);
+
+            var files = _jobObjects.Select(x => _fileReader.ReadFile(x.Path)).ToList();
+
+            files.AddRange(objectsToKeep.Select(o => o.Package));
+
+            pointsToClear.ForEach(p => _storage.RemoveFolder($"jobs/{p.JobName}/{p.Name}"));
+
+            List<PackagesGroup> fileGroups = _storageAlgorithm.ProceedFiles(files);
             DateTime creationDateTime = _dateTimeProvider.Now();
             string backupName = creationDateTime.ToString("dd-MM-yyy-HH-mm-ss-ffff");
 
             string currentBackupPath = $"jobs/{_name}/{backupName}";
-
             var archives = new List<Package>();
 
-            for (var index = 0; index < fileGroups.Count; index++)
+            for (int index = 0; index < fileGroups.Count; index++)
             {
-                JobsGroup filesToArchive = fileGroups[index];
-                var filePaths = filesToArchive.Jobs.Select(s => s.Path).ToList();
+                PackagesGroup filesToArchive = fileGroups[index];
                 var archiveFileStream = new MemoryStream();
 
-                var files = filePaths.Select(_fileReader.ReadFile).ToList();
-                _fileArchiver.ArchiveFiles(files, archiveFileStream);
+                _fileArchiver.ArchiveFiles(filesToArchive.Packages, archiveFileStream);
                 archives.Add(new Package($"{index}.zip", archiveFileStream));
-                files.ForEach(f => f.Dispose());
+                filesToArchive.Packages.ForEach(f => f.Dispose());
             }
 
             _storage.WriteFiles(currentBackupPath, archives);
             archives.ForEach(arch => arch.Dispose());
 
-            _restorePoitnts.Add(new RestorePointInfo(creationDateTime, _jobObjects));
+            _restorePoints.Add(new RestorePointInfo(creationDateTime, _name, backupName, _jobObjects.ToList()));
             _logger.Log($"Job {_name} finished");
-        }
-
-        internal BackupJobConfiguration GetConfiguration()
-        {
-            return new BackupJobConfiguration()
-            {
-                Name = _name,
-                FileReader = _fileReader.GetType().FullName,
-                StorageAlgorithm = _storageAlgorithm.GetType().FullName,
-                Storage = _storageAlgorithm.GetType().FullName,
-                JobObjects = _jobObjects.AsReadOnly(),
-                RestorePoints = _restorePoitnts.AsReadOnly(),
-            };
         }
     }
 }

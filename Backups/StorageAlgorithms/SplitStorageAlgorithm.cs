@@ -8,11 +8,11 @@ namespace Backups.StorageAlgorithms
 {
     public class SplitStorageAlgorithm : IStorageAlgorithm
     {
-        public List<JobsGroup> ProceedFiles(List<JobObject> jobObjects)
+        public List<PackagesGroup> ProceedFiles(List<Package> packages)
         {
-            ArgumentNullException.ThrowIfNull(jobObjects, nameof(jobObjects));
+            ArgumentNullException.ThrowIfNull(packages, nameof(packages));
 
-            return jobObjects.Select(jo => new JobsGroup(jo)).ToList();
+            return packages.Select(p => new PackagesGroup(p)).ToList();
         }
     }
 }
