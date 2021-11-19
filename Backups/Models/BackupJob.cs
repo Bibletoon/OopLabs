@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Backups.Entities;
+using Backups.Entities.Configuration;
 using Backups.FileHandlers;
 using Backups.FileReaders;
 using Backups.RestorePointsCleaners;
@@ -19,6 +20,7 @@ namespace Backups.Models
     {
         private readonly List<JobObject> _jobObjects;
         private readonly List<RestorePointInfo> _restorePoints;
+        private readonly JobServicesConfiguration _servicesConfiguration;
         private readonly IRestorePointsLimiter _limiter;
         private readonly IRestorePointsCleaner _cleaner;
         private readonly IFileReader _fileReader;
@@ -30,7 +32,7 @@ namespace Backups.Models
         private string _name;
 
         public BackupJob(
-            string name,
+            JobConfiguration configuration,
             IRestorePointsLimiter limiter,
             IFileReader fileReader,
             IFileArchiver fileArchiver,
@@ -40,7 +42,6 @@ namespace Backups.Models
             ILogger logger,
             IRestorePointsCleaner cleaner)
         {
-            ArgumentNullException.ThrowIfNull(name, nameof(name));
             ArgumentNullException.ThrowIfNull(limiter, nameof(limiter));
             ArgumentNullException.ThrowIfNull(cleaner, nameof(cleaner));
             ArgumentNullException.ThrowIfNull(fileReader, nameof(fileReader));
@@ -49,9 +50,10 @@ namespace Backups.Models
             ArgumentNullException.ThrowIfNull(storage, nameof(storage));
             ArgumentNullException.ThrowIfNull(dateTimeProvider, nameof(dateTimeProvider));
             ArgumentNullException.ThrowIfNull(logger, nameof(logger));
-            _jobObjects = new List<JobObject>();
-            _restorePoints = new List<RestorePointInfo>();
-            _name = name;
+            _jobObjects = configuration.JobObjects.ToList();
+            _restorePoints = configuration.RestorePoints.ToList();
+            _servicesConfiguration = configuration.ServicesConfiguration;
+            _name = configuration.Name;
             _limiter = limiter;
             _fileReader = fileReader;
             _fileArchiver = fileArchiver;
@@ -77,16 +79,22 @@ namespace Backups.Models
         public void Run()
         {
             _logger.Log($"Starting job {_name}");
+            var jobObjectsInPoint = _jobObjects.ToList();
 
-            var pointsToClear = _limiter.GetPointsToClear(_restorePoints, _jobObjects);
+            var pointsToClear = _limiter.GetPointsToClear(_restorePoints, jobObjectsInPoint);
 
-            var objectsToKeep = _cleaner.GetJobObjectsToKeep(pointsToClear, _jobObjects);
+            var objectsToKeep = _cleaner.GetJobObjectsToKeep(pointsToClear, jobObjectsInPoint);
 
-            var files = _jobObjects.Select(x => _fileReader.ReadFile(x.Path)).ToList();
+            var files = jobObjectsInPoint.Select(x => _fileReader.ReadFile(x.Path)).ToList();
 
             files.AddRange(objectsToKeep.Select(o => o.Package));
+            jobObjectsInPoint.AddRange(objectsToKeep.Select(o => o.JobObject));
 
-            pointsToClear.ForEach(p => _storage.RemoveFolder($"jobs/{p.JobName}/{p.Name}"));
+            pointsToClear.ForEach(p =>
+                                  {
+                                      _storage.RemoveFolder($"jobs/{p.JobName}/{p.Name}");
+                                      _restorePoints.Remove(p);
+                                  });
 
             List<PackagesGroup> fileGroups = _storageAlgorithm.ProceedFiles(files);
             DateTime creationDateTime = _dateTimeProvider.Now();
@@ -108,8 +116,11 @@ namespace Backups.Models
             _storage.WriteFiles(currentBackupPath, archives);
             archives.ForEach(arch => arch.Dispose());
 
-            _restorePoints.Add(new RestorePointInfo(creationDateTime, _name, backupName, _jobObjects.ToList()));
+            _restorePoints.Add(new RestorePointInfo(creationDateTime, _name, backupName, jobObjectsInPoint.ToList()));
             _logger.Log($"Job {_name} finished");
         }
+
+        public JobConfiguration GetConfiguration() =>
+            new JobConfiguration(_name, _servicesConfiguration, _restorePoints.ToList(), _jobObjects.ToList());
     }
 }
