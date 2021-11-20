@@ -119,7 +119,7 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
-        ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetRestorePointsCleaner<T>()
+        ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetRestorePointsLimiter<T>()
         {
             _serviceCollection.Remove<IRestorePointsLimiter>();
             RemoveServiceFromJobConfig<IRestorePointsLimiter>();
@@ -128,7 +128,7 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
-        ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetRestorePointsCleaner<T, TConfig>(TConfig config)
+        ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetRestorePointsLimiter<T, TConfig>(TConfig config)
             where TConfig : class
         {
             _serviceCollection.Remove<IRestorePointsLimiter>();

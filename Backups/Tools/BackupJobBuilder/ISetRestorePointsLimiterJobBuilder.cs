@@ -4,10 +4,10 @@ namespace Backups.Tools.BackupJobBuilder
 {
     public interface ISetRestorePointsLimiterJobBuilder
     {
-        ISetRestorePointsCleanerJobBuilder SetRestorePointsCleaner<T>()
+        ISetRestorePointsCleanerJobBuilder SetRestorePointsLimiter<T>()
             where T : class, IRestorePointsLimiter;
 
-        ISetRestorePointsCleanerJobBuilder SetRestorePointsCleaner<T, TConfig>(TConfig config)
+        ISetRestorePointsCleanerJobBuilder SetRestorePointsLimiter<T, TConfig>(TConfig config)
             where T : class, IRestorePointsLimiter
             where TConfig : class;
     }
