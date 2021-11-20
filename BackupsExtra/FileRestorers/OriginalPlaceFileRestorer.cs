@@ -11,7 +11,7 @@ namespace BackupsExtra.FileRestorers
     {
         public void RestoreFiles(List<JobObjectInfo> objects)
         {
-            if (objects.Any(o => Directory.Exists(Path.GetDirectoryName(o.JobObject.Path))))
+            if (objects.Any(o => !Directory.Exists(Path.GetDirectoryName(o.JobObject.Path))))
                 throw new RestoreException("Can't restore some files because their directory doesn't exists");
             foreach (var objectInfo in objects)
             {
