@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Backups.FileReaders;
@@ -61,6 +62,7 @@ namespace Backups.Tests
             _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}b.txt"));
             _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
+            TestDateTimeProvider.AddTime(TimeSpan.FromHours(1));
             _job.RemoveJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
 

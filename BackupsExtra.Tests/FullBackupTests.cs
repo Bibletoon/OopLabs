@@ -24,7 +24,7 @@ namespace BackupsExtra.Tests
 {
     public class FullBackupTests
     {
-        private const string _jobName = "job";
+        private const string _jobName = "extrajob";
         private string _jobsPath;
         private string _testFolderPath;
         private TypeLocator _locator;
@@ -63,7 +63,7 @@ namespace BackupsExtra.Tests
                        .RegisterType<CountRestorePointsLimiterConfiguration>()
                        .RegisterType<IRestorePointsCleaner>()
                        .RegisterType<MergeRestorePointsCleaner>();
-            _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}testFiles";
+            _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}extraTestFiles";
             SetUpTestFiles();
         }
 
@@ -86,6 +86,7 @@ namespace BackupsExtra.Tests
             _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}b.txt"));
             _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
+            TestDateTimeProvider.AddTime(TimeSpan.FromHours(1));
             _job.RemoveJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
 
