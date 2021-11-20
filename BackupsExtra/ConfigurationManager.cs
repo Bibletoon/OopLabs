@@ -58,5 +58,33 @@ namespace BackupsExtra
             serviceCollection.AddSingleton<BackupJob>();
             return serviceCollection.BuildServiceProvider().GetService<BackupJob>();
         }
+
+        internal void LoadJobServices(TypeLocator typeLocator, string filename, ServiceCollection serviceCollection)
+        {
+            ArgumentNullException.ThrowIfNull(typeLocator, nameof(typeLocator));
+            if (!File.Exists(filename))
+                throw new FileNotFoundException("No such configuration file");
+            var stringConfiguration = File.ReadAllText(filename);
+            var configuration = JsonConvert.DeserializeObject<JobConfiguration>(stringConfiguration);
+
+            if (configuration is null)
+                throw new Exception("Invalid configuration file");
+
+            foreach (var service in configuration.ServicesConfiguration.Services)
+            {
+                var type = typeLocator.GetType(service.Type);
+                var implementationType = typeLocator.GetType(service.ImplementationType);
+                serviceCollection.AddScoped(type, implementationType);
+            }
+
+            foreach (var serviceConfiguration in configuration.ServicesConfiguration.ServicesConfigurations)
+            {
+                var type = typeLocator.GetType(serviceConfiguration.Type);
+                var deserializedConfig = serviceConfiguration.ConfigurationObject as JObject;
+                serviceCollection.AddSingleton(type, deserializedConfig.ToObject(type));
+            }
+
+            serviceCollection.AddSingleton(configuration);
+        }
     }
 }
