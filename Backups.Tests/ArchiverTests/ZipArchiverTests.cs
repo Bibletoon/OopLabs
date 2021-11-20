@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using Backups.Entities;
 using Backups.FileHandlers;
+using Backups.Tests.TestComponents;
 using NUnit.Framework;
 
 namespace Backups.Tests.ArchiverTests

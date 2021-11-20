@@ -64,6 +64,9 @@ namespace Backups.Models
             _cleaner = cleaner;
         }
 
+        public List<JobObject> JobObjects => _jobObjects.ToList();
+        public List<RestorePointInfo> RestorePointInfos => _restorePoints.ToList();
+
         public void AddJobObject(JobObject jobObject)
         {
             if (_jobObjects.Contains(jobObject))
