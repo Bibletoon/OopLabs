@@ -1,3 +1,4 @@
+using System;
 using Backups.Tools.Extensions;
 using BackupsExtra.FileRestorers;
 using BackupsExtra.FileRestorers.Configurations;
@@ -6,32 +7,32 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BackupsExtra.RestoreJobBuilder
 {
-    public class RestoreJobBuilder : ISetFileRestorerJobBilder, IFinalRestoreJobBuilder
+    public class RestoreJobBuilder : ISetFileRestorerJobBuilder, IFinalRestoreJobBuilder
     {
-        private ServiceCollection _serviceCollection;
+        private readonly ServiceCollection _serviceCollection;
 
         public RestoreJobBuilder()
         {
             _serviceCollection = new ServiceCollection();
         }
 
-        public ISetFileRestorerJobBilder LoadJobConfiguration(ConfigurationManager manager, TypeLocator typeLocator, string configurationFilePath)
+        public ISetFileRestorerJobBuilder LoadJobConfiguration(ConfigurationManager manager, TypeLocator typeLocator, string configurationFilePath)
         {
             manager.LoadJobServices(typeLocator, configurationFilePath, _serviceCollection);
             return this;
         }
 
-        IFinalRestoreJobBuilder ISetFileRestorerJobBilder.SetFileRestorer<T>(
-            CustomFolderFileRestorerConfig customFolderFileRestorerConfig)
+        IFinalRestoreJobBuilder ISetFileRestorerJobBuilder.SetFileRestorer<T>()
         {
             _serviceCollection.Remove<IFileRestorer>();
             _serviceCollection.AddScoped<IFileRestorer, T>();
             return this;
         }
 
-        IFinalRestoreJobBuilder ISetFileRestorerJobBilder.SetFileRestorer<T, TConfiguration>(
+        IFinalRestoreJobBuilder ISetFileRestorerJobBuilder.SetFileRestorer<T, TConfiguration>(
             TConfiguration configuration)
         {
+            ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
             _serviceCollection.Remove<IFileRestorer>();
             _serviceCollection.AddScoped<IFileRestorer, T>();
             _serviceCollection.Remove<TConfiguration>();

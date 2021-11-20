@@ -11,8 +11,8 @@ namespace BackupsExtra.RestorePointsCleaner
 {
     public class MergeRestorePointsCleaner : IRestorePointsCleaner
     {
-        private IStorage _storage;
-        private IFileArchiver _fileArchiver;
+        private readonly IStorage _storage;
+        private readonly IFileArchiver _fileArchiver;
 
         public MergeRestorePointsCleaner(IStorage storage, IFileArchiver fileArchiver)
         {
@@ -22,6 +22,9 @@ namespace BackupsExtra.RestorePointsCleaner
 
         public List<JobObjectInfo> GetJobObjectsToKeep(List<RestorePointInfo> restorePoints, List<JobObject> jobObjects)
         {
+            if (restorePoints.Count == 0)
+                return new List<JobObjectInfo>();
+
             var jobObjectsToKeep = new List<JobObjectInfo>();
             foreach (var restorePoint in restorePoints)
             {

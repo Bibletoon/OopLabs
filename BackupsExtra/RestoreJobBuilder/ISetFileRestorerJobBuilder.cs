@@ -3,9 +3,9 @@ using BackupsExtra.FileRestorers.Configurations;
 
 namespace BackupsExtra.RestoreJobBuilder
 {
-    public interface ISetFileRestorerJobBilder
+    public interface ISetFileRestorerJobBuilder
     {
-        IFinalRestoreJobBuilder SetFileRestorer<T>(CustomFolderFileRestorerConfig customFolderFileRestorerConfig)
+        IFinalRestoreJobBuilder SetFileRestorer<T>()
             where T : class, IFileRestorer;
 
         IFinalRestoreJobBuilder SetFileRestorer<T, TConfiguration>(TConfiguration configuration)

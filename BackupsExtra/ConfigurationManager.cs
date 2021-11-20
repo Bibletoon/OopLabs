@@ -3,6 +3,7 @@ using System.IO;
 using Backups.Entities.Configuration;
 using Backups.Models;
 using Backups.Tools;
+using BackupsExtra.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -34,10 +35,18 @@ namespace BackupsExtra
             if (!File.Exists(filename))
                 throw new FileNotFoundException("No such configuration file");
             var stringConfiguration = File.ReadAllText(filename);
-            var configuration = JsonConvert.DeserializeObject<JobConfiguration>(stringConfiguration);
 
-            if (configuration is null)
-                throw new Exception("Invalid configuration file");
+            JobConfiguration configuration;
+
+            try
+            {
+                configuration = JsonConvert.DeserializeObject<JobConfiguration>(stringConfiguration);
+            }
+            catch (Exception e)
+            {
+                throw new JobConfigurationException("Invalid configuration file", e);
+            }
+
             var serviceCollection = new ServiceCollection();
 
             foreach (var service in configuration.ServicesConfiguration.Services)
@@ -68,7 +77,7 @@ namespace BackupsExtra
             var configuration = JsonConvert.DeserializeObject<JobConfiguration>(stringConfiguration);
 
             if (configuration is null)
-                throw new Exception("Invalid configuration file");
+                throw new JobConfigurationException("Invalid configuration file");
 
             foreach (var service in configuration.ServicesConfiguration.Services)
             {

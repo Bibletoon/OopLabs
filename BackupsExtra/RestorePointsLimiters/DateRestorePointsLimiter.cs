@@ -9,19 +9,19 @@ namespace BackupsExtra.RestorePointsLimiters
 {
     public class DateRestorePointsLimiter : IRestorePointsLimiter
     {
+        private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly DateRestorePointsLimiterConfig _config;
+
         public DateRestorePointsLimiter(IDateTimeProvider dateTimeProvider, DateRestorePointsLimiterConfig config)
         {
-            DateTimeProvider = dateTimeProvider;
-            Config = config;
+            _dateTimeProvider = dateTimeProvider;
+            _config = config;
         }
-
-        public IDateTimeProvider DateTimeProvider { get; set; }
-        public DateRestorePointsLimiterConfig Config { get; set; }
 
         public List<RestorePointInfo> GetPointsToClear(List<RestorePointInfo> createdPoints, List<JobObject> jobObjects)
         {
             return createdPoints.Where(p => p.CreationDate <
-                                            DateTimeProvider.Now().Subtract(Config.RestorePointTimeLimit)).ToList();
+                                            _dateTimeProvider.Now().Subtract(_config.RestorePointTimeLimit)).ToList();
         }
     }
 }

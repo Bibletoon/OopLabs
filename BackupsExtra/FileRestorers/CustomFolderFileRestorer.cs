@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Backups.Entities;
@@ -7,10 +8,11 @@ namespace BackupsExtra.FileRestorers
 {
     public class CustomFolderFileRestorer : IFileRestorer
     {
-        private CustomFolderFileRestorerConfig _config;
+        private readonly CustomFolderFileRestorerConfig _config;
 
         public CustomFolderFileRestorer(CustomFolderFileRestorerConfig config)
         {
+            ArgumentNullException.ThrowIfNull(config, nameof(config));
             _config = config;
         }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Backups.Entities;
 using Backups.Models;
@@ -8,10 +9,11 @@ namespace BackupsExtra.RestorePointsCleaner
 {
     public class DeleteRestorePointsCleaner : IRestorePointsCleaner
     {
-        private IStorage _storage;
+        private readonly IStorage _storage;
 
         public DeleteRestorePointsCleaner(IStorage storage)
         {
+            ArgumentNullException.ThrowIfNull(storage, nameof(storage));
             _storage = storage;
         }
 

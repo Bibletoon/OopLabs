@@ -8,8 +8,8 @@ namespace BackupsExtra.Loggers
 {
     public class FileLogger : ILogger
     {
-        private FileLoggerConfiguration _configuration;
-        private IDateTimeProvider _dateTimeProvider;
+        private readonly FileLoggerConfiguration _configuration;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public FileLogger(FileLoggerConfiguration configuration, IDateTimeProvider dateTimeProvider)
         {

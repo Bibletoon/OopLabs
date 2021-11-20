@@ -32,7 +32,7 @@ namespace BackupsExtra.Models
             var pointToRestore = _restorePoints.FirstOrDefault(w => w.Name == pointName);
 
             if (pointToRestore is null)
-                throw new Exception("Invalid point name");
+                throw new ArgumentException("Invalid point name");
 
             var archivedPackages = _storage.ReadFiles($"jobs/{pointToRestore.JobName}/{pointToRestore.Name}");
             var dearchivedPackages = archivedPackages.SelectMany(p => _fileArchiver.DearchiveFile(p)).ToList();

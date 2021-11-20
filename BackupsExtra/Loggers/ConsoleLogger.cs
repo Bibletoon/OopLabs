@@ -7,8 +7,8 @@ namespace BackupsExtra.Loggers
 {
     public class ConsoleLogger : ILogger
     {
-        private ConsoleLoggerConfiguration _configuration;
-        private IDateTimeProvider _dateTimeProvider;
+        private readonly ConsoleLoggerConfiguration _configuration;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public ConsoleLogger(ConsoleLoggerConfiguration configuration, IDateTimeProvider dateTimeProvider)
         {
