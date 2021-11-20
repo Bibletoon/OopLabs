@@ -4,6 +4,7 @@ using Backups.FileReaders;
 using Backups.Models;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
+using Backups.Tests.TestComponents;
 using Backups.Tools.BackupJobBuilder;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
@@ -34,6 +35,8 @@ namespace Backups.Tests
                       .SetStorage<LocalStorage>()
                       .SetLogger<TestLogger>()
                       .SetDateTimeProvider<TestDateTimeProvider>()
+                      .SetRestorePointsLimiter<TestRestorePointsLimiter>()
+                      .SetRestorePointsCleaner<TestRestorePointsCleaner>()
                       .Build();
             _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}testFiles";
             SetUpTestFiles();
