@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Backups.FileHandlers;
 using Backups.FileReaders;
@@ -86,6 +87,14 @@ namespace BackupsExtra.Tests
             var loadedJob = configurationManager.LoadBackupJob("config.json");
             CollectionAssert.AreEqual(_job.JobObjects, loadedJob.JobObjects);
             CollectionAssert.AreEqual(_job.RestorePointInfos, loadedJob.RestorePointInfos);
+        }
+
+        [Test]
+        public void ForScience()
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "/bin/bash", Arguments = "echo aboba > /home/aboba/kekw.txt", };
+            Process proc = new Process() { StartInfo = startInfo, };
+            proc.Start();
         }
 
         [OneTimeTearDown]
