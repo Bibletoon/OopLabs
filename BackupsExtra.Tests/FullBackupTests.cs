@@ -1,24 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using Backups.FileHandlers;
 using Backups.FileReaders;
 using Backups.Models;
-using Backups.RestorePointsCleaners;
-using Backups.RestorePointsLimiters;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
 using Backups.Tests.TestComponents;
-using Backups.Tools;
 using Backups.Tools.BackupJobBuilder;
-using Backups.Tools.Logger;
-using BackupsExtra.DateTimeProviders;
-using BackupsExtra.Loggers;
 using BackupsExtra.RestorePointsCleaner;
 using BackupsExtra.RestorePointsLimiters;
 using BackupsExtra.RestorePointsLimiters.Configurations;
-using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 
 namespace BackupsExtra.Tests
@@ -87,15 +77,6 @@ namespace BackupsExtra.Tests
             var loadedJob = configurationManager.LoadBackupJob("config.json");
             CollectionAssert.AreEqual(_job.JobObjects, loadedJob.JobObjects);
             CollectionAssert.AreEqual(_job.RestorePointInfos, loadedJob.RestorePointInfos);
-        }
-
-        [Test]
-        public void ForScience()
-        {
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "/bin/bash", Arguments = "rm -rf /home/hrrrrustic/testci", };
-            Process proc = new Process() { StartInfo = startInfo, };
-            proc.Start();
-            proc.WaitForExit();
         }
 
         [OneTimeTearDown]
