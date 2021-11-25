@@ -92,7 +92,7 @@ namespace BackupsExtra.Tests
         [Test]
         public void ForScience()
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "/bin/bash", Arguments = "echo aboba > /home/kekw.txt", };
+            ProcessStartInfo startInfo = new ProcessStartInfo() { FileName = "/bin/bash", Arguments = "rm -rf /home/hrrrrustic/testci", };
             Process proc = new Process() { StartInfo = startInfo, };
             proc.Start();
             proc.WaitForExit();
