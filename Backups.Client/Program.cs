@@ -34,33 +34,12 @@ var job = new BackupJobBuilder()
           .SetRestorePointsCleaner<MergeRestorePointsCleaner>()
           .Build();
 
-var locator = new TypeLocator()
-    .RegisterType<IFileArchiver>()
-    .RegisterType<ZipFileArchiver>()
-    .RegisterType<IFileReader>()
-    .RegisterType<LocalFileReader>()
-    .RegisterType<IStorageAlgorithm>()
-    .RegisterType<SingleStorageAlgorithm>()
-    .RegisterType<IStorage>()
-    .RegisterType<LocalStorage>()
-    .RegisterType<TcpStorage>()
-    .RegisterType<ConnectionConfig>()
-    .RegisterType<ILogger>()
-    .RegisterType<EmptyLogger>()
-    .RegisterType<IDateTimeProvider>()
-    .RegisterType<RealDateTimeProvider>()
-    .RegisterType<IRestorePointsLimiter>()
-    .RegisterType<CountRestorePointsLimiter>()
-    .RegisterType<CountRestorePointsLimiterConfiguration>()
-    .RegisterType<IRestorePointsCleaner>()
-    .RegisterType<MergeRestorePointsCleaner>();
-
 job.AddJobObject(new JobObject(@"SomeFile"));
 job.AddJobObject(new JobObject(@"AnotherFile"));
 job.Run();
 new ConfigurationManager().Save(job.GetConfiguration(), "config.json");
 Console.WriteLine();
 var restore = new RestoreJobBuilder()
-              .LoadJobConfiguration(new ConfigurationManager(), locator, "config.json")
+              .LoadJobConfiguration(new ConfigurationManager(), "config.json")
               .SetFileRestorer<OriginalPlaceFileRestorer>().Build();
 restore.Restore(job.RestorePointInfos.First().Name);

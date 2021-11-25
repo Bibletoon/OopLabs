@@ -2,37 +2,41 @@ using System;
 using System.IO;
 using Backups.Entities.Configuration;
 using Backups.Models;
-using Backups.Tools;
 using BackupsExtra.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace BackupsExtra
 {
     public class ConfigurationManager
     {
+        private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings()
+        {
+            Formatting = Formatting.Indented,
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+            TypeNameHandling = TypeNameHandling.All,
+        };
+
         public void Save(JobConfiguration configuration, string filename)
         {
             ArgumentNullException.ThrowIfNull(configuration, nameof(configuration));
             ArgumentNullException.ThrowIfNull(filename, nameof(filename));
-            var stringConfiguration = JsonConvert.SerializeObject(configuration);
+            var stringConfiguration = JsonConvert.SerializeObject(configuration, Settings);
             File.WriteAllText(filename, stringConfiguration);
         }
 
-        public BackupJob LoadBackupJob(TypeLocator typeLocator, string filename)
+        public BackupJob LoadBackupJob(string filename)
         {
             var serviceCollection = new ServiceCollection();
 
-            LoadJobServices(typeLocator, filename, serviceCollection);
+            LoadJobServices(filename, serviceCollection);
 
             serviceCollection.AddSingleton<BackupJob>();
             return serviceCollection.BuildServiceProvider().GetService<BackupJob>();
         }
 
-        internal void LoadJobServices(TypeLocator typeLocator, string filename, ServiceCollection serviceCollection)
+        internal void LoadJobServices(string filename, ServiceCollection serviceCollection)
         {
-            ArgumentNullException.ThrowIfNull(typeLocator, nameof(typeLocator));
             ArgumentNullException.ThrowIfNull(serviceCollection, nameof(serviceCollection));
             if (!File.Exists(filename))
                 throw new FileNotFoundException("No such configuration file");
@@ -41,7 +45,7 @@ namespace BackupsExtra
 
             try
             {
-                configuration = JsonConvert.DeserializeObject<JobConfiguration>(stringConfiguration);
+                configuration = JsonConvert.DeserializeObject<JobConfiguration>(stringConfiguration, Settings);
             }
             catch (Exception e)
             {
@@ -53,16 +57,12 @@ namespace BackupsExtra
 
             foreach (var service in configuration.ServicesConfiguration.Services)
             {
-                var type = typeLocator.GetType(service.Type);
-                var implementationType = typeLocator.GetType(service.ImplementationType);
-                serviceCollection.AddScoped(type, implementationType);
+                serviceCollection.AddScoped(service.Type, service.ImplementationType);
             }
 
             foreach (var serviceConfiguration in configuration.ServicesConfiguration.ServicesConfigurations)
             {
-                var type = typeLocator.GetType(serviceConfiguration.Type);
-                var deserializedConfig = serviceConfiguration.ConfigurationObject as JObject;
-                serviceCollection.AddSingleton(type, deserializedConfig.ToObject(type));
+                serviceCollection.AddSingleton(serviceConfiguration.Type, serviceConfiguration.ConfigurationObject);
             }
 
             serviceCollection.AddSingleton(configuration);

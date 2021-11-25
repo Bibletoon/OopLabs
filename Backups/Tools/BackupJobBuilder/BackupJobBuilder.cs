@@ -6,6 +6,7 @@ using Backups.FileReaders;
 using Backups.Models;
 using Backups.RestorePointsCleaners;
 using Backups.RestorePointsLimiters;
+using Backups.RestorePointsLimiters.Configurations;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
 using Backups.Tools.Extensions;
@@ -25,9 +26,9 @@ namespace Backups.Tools.BackupJobBuilder
           ISetRestorePointsCleanerJobBuilder,
           IFinalJobBuilder
     {
-        private ServiceCollection _serviceCollection;
-        private List<ServiceInfo> _typedServices;
-        private List<ServiceConfigurationInfo> _serviceConfigurations;
+        private readonly ServiceCollection _serviceCollection;
+        private readonly List<ServiceInfo> _typedServices;
+        private readonly List<ServiceConfigurationInfo> _serviceConfigurations;
         private string _name;
 
         public BackupJobBuilder()
@@ -128,6 +129,20 @@ namespace Backups.Tools.BackupJobBuilder
             return this;
         }
 
+        ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetHybridRestorePointsLimiter<TFirst, TSecond>(bool acceptBoth)
+        {
+            var first = _serviceCollection.AddScoped<TFirst>().BuildServiceProvider().GetService<TFirst>();
+            _serviceCollection.Remove<TFirst>();
+            var second = _serviceCollection.AddScoped<TSecond>().BuildServiceProvider().GetService<TSecond>();
+            _serviceCollection.Remove<TSecond>();
+            var config = new HybridRestorePointsLimiterConfig(first, second, acceptBoth);
+            _serviceCollection.AddScoped<HybridRestorePointsLimiter>();
+            _serviceCollection.AddSingleton(config);
+            SaveServiceToJobConfig<IRestorePointsLimiter, HybridRestorePointsLimiter>();
+            SaveServiceConfigToJobConfig(config);
+            return this;
+        }
+
         ISetRestorePointsCleanerJobBuilder ISetRestorePointsLimiterJobBuilder.SetRestorePointsLimiter<T, TConfig>(TConfig config)
             where TConfig : class
         {
@@ -175,8 +190,8 @@ namespace Backups.Tools.BackupJobBuilder
         {
             _typedServices.Add(new ServiceInfo()
             {
-                Type = typeof(T).FullName,
-                ImplementationType = typeof(TImplementation).FullName,
+                Type = typeof(T),
+                ImplementationType = typeof(TImplementation),
             });
         }
 
@@ -187,12 +202,12 @@ namespace Backups.Tools.BackupJobBuilder
 
         private void RemoveServiceFromJobConfig<T>()
         {
-            _typedServices.RemoveAll(s => s.Type == typeof(T).FullName);
+            _typedServices.RemoveAll(s => s.Type == typeof(T));
         }
 
         private void RemoveServiceConfigFromJobConfig<T>()
         {
-            _serviceConfigurations.RemoveAll(s => s.Type == typeof(T).FullName);
+            _serviceConfigurations.RemoveAll(s => s.Type == typeof(T));
         }
     }
 }

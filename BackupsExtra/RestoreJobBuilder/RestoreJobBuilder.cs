@@ -16,9 +16,9 @@ namespace BackupsExtra.RestoreJobBuilder
             _serviceCollection = new ServiceCollection();
         }
 
-        public ISetFileRestorerJobBuilder LoadJobConfiguration(ConfigurationManager manager, TypeLocator typeLocator, string configurationFilePath)
+        public ISetFileRestorerJobBuilder LoadJobConfiguration(ConfigurationManager manager, string configurationFilePath)
         {
-            manager.LoadJobServices(typeLocator, configurationFilePath, _serviceCollection);
+            manager.LoadJobServices(configurationFilePath, _serviceCollection);
             return this;
         }
 
@@ -36,7 +36,7 @@ namespace BackupsExtra.RestoreJobBuilder
             _serviceCollection.Remove<IFileRestorer>();
             _serviceCollection.AddScoped<IFileRestorer, T>();
             _serviceCollection.Remove<TConfiguration>();
-            _serviceCollection.AddSingleton<TConfiguration>(configuration);
+            _serviceCollection.AddSingleton(configuration);
             return this;
         }
 

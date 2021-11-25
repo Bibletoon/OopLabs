@@ -10,5 +10,9 @@ namespace Backups.Tools.BackupJobBuilder
         ISetRestorePointsCleanerJobBuilder SetRestorePointsLimiter<T, TConfig>(TConfig config)
             where T : class, IRestorePointsLimiter
             where TConfig : class;
+
+        ISetRestorePointsCleanerJobBuilder SetHybridRestorePointsLimiter<TFirst, TSecond>(bool acceptBoth)
+            where TFirst : class, IRestorePointsLimiter
+            where TSecond : class, IRestorePointsLimiter;
     }
 }

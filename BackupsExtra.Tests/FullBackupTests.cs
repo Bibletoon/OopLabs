@@ -27,7 +27,6 @@ namespace BackupsExtra.Tests
         private const string _jobName = "extrajob";
         private string _jobsPath;
         private string _testFolderPath;
-        private TypeLocator _locator;
         private BackupJob _job;
 
         [OneTimeSetUp]
@@ -45,24 +44,6 @@ namespace BackupsExtra.Tests
                    .SetRestorePointsLimiter<CountRestorePointsLimiter, CountRestorePointsLimiterConfiguration>(new CountRestorePointsLimiterConfiguration(1))
                    .SetRestorePointsCleaner<MergeRestorePointsCleaner>()
                    .Build();
-            _locator = new TypeLocator()
-                       .RegisterType<IFileArchiver>()
-                       .RegisterType<ZipFileArchiver>()
-                       .RegisterType<IFileReader>()
-                       .RegisterType<LocalFileReader>()
-                       .RegisterType<IStorageAlgorithm>()
-                       .RegisterType<SplitStorageAlgorithm>()
-                       .RegisterType<IStorage>()
-                       .RegisterType<LocalStorage>()
-                       .RegisterType<ILogger>()
-                       .RegisterType<TestLogger>()
-                       .RegisterType<IDateTimeProvider>()
-                       .RegisterType<TestDateTimeProvider>()
-                       .RegisterType<IRestorePointsLimiter>()
-                       .RegisterType<CountRestorePointsLimiter>()
-                       .RegisterType<CountRestorePointsLimiterConfiguration>()
-                       .RegisterType<IRestorePointsCleaner>()
-                       .RegisterType<MergeRestorePointsCleaner>();
             _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}extraTestFiles";
             SetUpTestFiles();
         }
@@ -102,7 +83,7 @@ namespace BackupsExtra.Tests
             var config = _job.GetConfiguration();
             var configurationManager = new ConfigurationManager();
             configurationManager.Save(config, "config.json");
-            var loadedJob = configurationManager.LoadBackupJob(_locator, "config.json");
+            var loadedJob = configurationManager.LoadBackupJob("config.json");
             CollectionAssert.AreEqual(_job.JobObjects, loadedJob.JobObjects);
             CollectionAssert.AreEqual(_job.RestorePointInfos, loadedJob.RestorePointInfos);
         }

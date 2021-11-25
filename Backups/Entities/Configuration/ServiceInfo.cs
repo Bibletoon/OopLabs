@@ -1,8 +1,10 @@
+using System;
+
 namespace Backups.Entities.Configuration
 {
     public class ServiceInfo
     {
-        public string Type { get; init; }
-        public string ImplementationType { get; init; }
+        public Type Type { get; init; }
+        public Type ImplementationType { get; init; }
     }
 }

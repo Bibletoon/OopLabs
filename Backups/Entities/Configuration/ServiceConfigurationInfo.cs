@@ -4,7 +4,7 @@ namespace Backups.Entities.Configuration
 {
     public class ServiceConfigurationInfo
     {
-        public ServiceConfigurationInfo(string type, object configurationObject)
+        public ServiceConfigurationInfo(Type type, object configurationObject)
         {
             Type = type;
             ConfigurationObject = configurationObject;
@@ -13,7 +13,7 @@ namespace Backups.Entities.Configuration
         public ServiceConfigurationInfo(object configurationObject)
         {
             ArgumentNullException.ThrowIfNull(configurationObject, nameof(configurationObject));
-            Type = configurationObject.GetType().FullName;
+            Type = configurationObject.GetType();
             ConfigurationObject = configurationObject;
         }
 
@@ -21,7 +21,7 @@ namespace Backups.Entities.Configuration
         {
         }
 
-        public string Type { get; init; }
+        public Type Type { get; init; }
         public object ConfigurationObject { get; init; }
     }
 }
