@@ -2,12 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Backups.Entities;
+using Backups.Tools.Logger;
 
 namespace Backups.FileHandlers
 {
     public class ZipFileArchiver : IFileArchiver
     {
+        private readonly ILogger _logger;
+
+        public ZipFileArchiver(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public void ArchiveFiles(List<Package> files, Stream writeStream)
         {
             ArgumentNullException.ThrowIfNull(files, nameof(files));
@@ -20,6 +29,8 @@ namespace Backups.FileHandlers
                 using Stream archiveEntryStream = archiveEntry.Open();
                 file.Content.CopyTo(archiveEntryStream);
             }
+
+            _logger.Log($"Files {string.Join(',', files.Select(f => f.Name))} archived");
         }
 
         public List<Package> DearchiveFile(Package archiveContent)
@@ -39,6 +50,7 @@ namespace Backups.FileHandlers
                 fileInfos.Add(new Package(name, stream));
             }
 
+            _logger.Log($"Files {string.Join(',', fileInfos.Select(f => f.Name))} archived");
             return fileInfos;
         }
 

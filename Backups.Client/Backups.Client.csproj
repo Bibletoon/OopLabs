@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Backups.Tcp.Common\Backups.Tcp.Common.csproj" />
+      <ProjectReference Include="..\BackupsExtra\BackupsExtra.csproj" />
       <ProjectReference Include="..\Backups\Backups.csproj" />
     </ItemGroup>
 

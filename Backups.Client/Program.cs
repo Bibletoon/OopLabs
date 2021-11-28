@@ -1,21 +1,45 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
 using Backups.Client;
+using Backups.FileHandlers;
 using Backups.FileReaders;
 using Backups.Models;
+using Backups.RestorePointsCleaners;
+using Backups.RestorePointsLimiters;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
 using Backups.TcpServer.Common;
+using Backups.Tools;
 using Backups.Tools.BackupJobBuilder;
-using Microsoft.Extensions.Configuration;
+using Backups.Tools.Logger;
+using BackupsExtra;
+using BackupsExtra.DateTimeProviders;
+using BackupsExtra.FileRestorers;
+using BackupsExtra.FileRestorers.Configurations;
+using BackupsExtra.Loggers;
+using BackupsExtra.RestoreJobBuilder;
+using BackupsExtra.RestorePointsCleaner;
+using BackupsExtra.RestorePointsLimiters;
+using BackupsExtra.RestorePointsLimiters.Configurations;
 
-var configuration = new ConnectionConfig("127.0.0.1", 8080);
+var config =  new ConnectionConfig("127.0.0.1", 8080);
 var job = new BackupJobBuilder()
-          .SetFileReader(new LocalFileReader())
+          .SetFileReader<LocalFileReader>()
           .SetName("job")
-          .SetStorageAlgorithm(new SingleStorageAlgorithm())
-          .SetStorage(new TcpStorage(configuration))
+          .SetStorageAlgorithm<SingleStorageAlgorithm>()
+          .SetStorage<TcpStorage, ConnectionConfig>(config)
+          .SetLogger<EmptyLogger>()
+          .SetDateTimeProvider<RealDateTimeProvider>()
+          .SetRestorePointsLimiter<CountRestorePointsLimiter, CountRestorePointsLimiterConfiguration>(new CountRestorePointsLimiterConfiguration(1))
+          .SetRestorePointsCleaner<MergeRestorePointsCleaner>()
           .Build();
-job.AddJobObject(new JobObject(@"C:\Users\alex8\Pictures\9pg5eq6w42d51.jpg"));
-job.AddJobObject(new JobObject(@"C:\Users\alex8\Pictures\dolboeb.png"));
 
+job.AddJobObject(new JobObject(@"SomeFile"));
+job.AddJobObject(new JobObject(@"AnotherFile"));
 job.Run();
+new ConfigurationManager().Save(job.GetConfiguration(), "config.json");
+Console.WriteLine();
+var restore = new RestoreJobBuilder()
+              .LoadJobConfiguration(new ConfigurationManager(), "config.json")
+              .SetFileRestorer<OriginalPlaceFileRestorer>().Build();
+restore.Restore(job.RestorePointInfos.First().Name);

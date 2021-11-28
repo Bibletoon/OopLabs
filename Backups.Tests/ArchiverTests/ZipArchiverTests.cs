@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using Backups.Entities;
 using Backups.FileHandlers;
+using Backups.Tests.TestComponents;
 using NUnit.Framework;
 
 namespace Backups.Tests.ArchiverTests
@@ -13,9 +14,9 @@ namespace Backups.Tests.ArchiverTests
         [SetUp]
         public void SetUp()
         {
-            _archiver = new ZipFileArchiver();
+            _archiver = new ZipFileArchiver(new TestLogger());
         }
-        
+
         [Test]
         public void ArchiveAndDearchiveFiles_FilesShouldBeEqual()
         {
@@ -25,7 +26,7 @@ namespace Backups.Tests.ArchiverTests
             writerA.Close();
             fileAContent.Seek(0, SeekOrigin.Begin);
             Package fileA = new Package("a.txt", fileAContent);
-            
+
             using var fileBContent = new MemoryStream();
             var writerB = new StreamWriter(fileBContent, leaveOpen: true);
             writerB.Write("b.txt");
@@ -45,8 +46,8 @@ namespace Backups.Tests.ArchiverTests
                 streamReader.Close();
                 Assert.AreEqual(file.Name, content);
             }
-            
+
             dearchivedFiles.ForEach(f=>f.Dispose());
-        } 
+        }
     }
 }

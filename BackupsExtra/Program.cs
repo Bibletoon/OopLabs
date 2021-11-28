@@ -1,9 +1,3 @@
-﻿namespace BackupsExtra
-{
-    internal class Program
-    {
-        private static void Main()
-        {
-        }
-    }
-}
+using System;
+
+Console.WriteLine();

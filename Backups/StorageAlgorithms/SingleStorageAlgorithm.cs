@@ -7,11 +7,11 @@ namespace Backups.StorageAlgorithms
 {
     public class SingleStorageAlgorithm : IStorageAlgorithm
     {
-        public List<JobsGroup> ProceedFiles(List<JobObject> jobObjects)
+        public List<PackagesGroup> ProceedFiles(List<Package> packages)
         {
-            ArgumentNullException.ThrowIfNull(jobObjects, nameof(jobObjects));
+            ArgumentNullException.ThrowIfNull(packages, nameof(packages));
 
-            return new List<JobsGroup>() { new JobsGroup(jobObjects) };
+            return new List<PackagesGroup>() { new PackagesGroup(packages) };
         }
     }
 }

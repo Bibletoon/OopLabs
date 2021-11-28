@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Backups.FileReaders;
 using Backups.Models;
 using Backups.StorageAlgorithms;
 using Backups.Storages;
+using Backups.Tests.TestComponents;
 using Backups.Tools.BackupJobBuilder;
 using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
@@ -17,7 +19,7 @@ namespace Backups.Tests
         private string _jobsPath;
         private string _testFolderPath;
         private BackupJob _job;
-        
+
         [OneTimeSetUp]
         public void SetUp()
         {
@@ -28,10 +30,14 @@ namespace Backups.Tests
                 { "jobsPath", _jobsPath },
             }).Build();
             _job = new BackupJobBuilder()
-                      .SetFileReader(new LocalFileReader())
+                      .SetFileReader<LocalFileReader>()
                       .SetName(_jobName)
-                      .SetStorageAlgorithm(new SplitStorageAlgorithm())
-                      .SetStorage(new LocalStorage())
+                      .SetStorageAlgorithm<SplitStorageAlgorithm>()
+                      .SetStorage<LocalStorage>()
+                      .SetLogger<TestLogger>()
+                      .SetDateTimeProvider<TestDateTimeProvider>()
+                      .SetRestorePointsLimiter<TestRestorePointsLimiter>()
+                      .SetRestorePointsCleaner<TestRestorePointsCleaner>()
                       .Build();
             _testFolderPath = $"{currentDirectory}{Path.DirectorySeparatorChar}testFiles";
             SetUpTestFiles();
@@ -56,6 +62,7 @@ namespace Backups.Tests
             _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}b.txt"));
             _job.AddJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
+            TestDateTimeProvider.AddTime(TimeSpan.FromHours(1));
             _job.RemoveJobObject(new JobObject($"{_testFolderPath}{Path.DirectorySeparatorChar}c.txt"));
             _job.Run();
 
